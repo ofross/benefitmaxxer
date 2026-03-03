@@ -64,16 +64,23 @@ async function copilotQuery(proxyUrl, token, query, variables = {}) {
     body: JSON.stringify({ query, variables }),
   });
 
-  if (res.status === 401) {
+  // Read body once so we can inspect it regardless of status
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch { json = null; }
+
+  if (res.status === 401 ||
+      (json?.errors?.[0]?.extensions?.code === 'UNAUTHENTICATED') ||
+      (json?.errors?.[0]?.message || '').toLowerCase().includes('not authenticated')) {
     throw new Error('TOKEN_EXPIRED');
   }
+
   if (!res.ok) {
-    throw new Error(`Proxy returned HTTP ${res.status}. Check your proxy URL.`);
+    const detail = json?.errors?.[0]?.message || text.slice(0, 200);
+    throw new Error(`Copilot API returned HTTP ${res.status}: ${detail}`);
   }
 
-  const json = await res.json();
-
-  if (json.errors && json.errors.length > 0) {
+  if (json?.errors && json.errors.length > 0) {
     const msg = json.errors[0].message || 'Unknown GraphQL error';
     if (msg.toLowerCase().includes('unauthenticated') || msg.toLowerCase().includes('unauthorized')) {
       throw new Error('TOKEN_EXPIRED');
