@@ -12,7 +12,7 @@
 const GQL = {
 
   USER: `query User {
-    user { id email name }
+    user { id name }
   }`,
 
   ACCOUNTS: `query Accounts {
