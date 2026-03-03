@@ -30,8 +30,9 @@ const GQL = {
   }`,
 
   // Paginated — call repeatedly until hasNextPage is false
-  TRANSACTIONS: `query Transactions($first: Int, $after: String, $filter: TransactionFilter) {
-    transactions(first: $first, after: $after, filter: $filter) {
+  // year is inlined into the query string to avoid TransactionFilter variable type issues
+  TRANSACTIONS: year => `query Transactions($first: Int, $after: String) {
+    transactions(first: $first, after: $after, filter: { dates: { from: "${year}-01-01", to: "${year}-12-31" } }) {
       edges {
         cursor
         node {
@@ -129,18 +130,11 @@ async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
   let after    = null;
   let hasMore  = true;
 
-  const filter = {
-    dates: {
-      from: `${year}-01-01`,
-      to:   `${year}-12-31`,
-    },
-  };
-
   while (hasMore) {
-    const vars = { first: 200, filter };
+    const vars = { first: 200 };
     if (after) vars.after = after;
 
-    const data = await copilotQuery(proxyUrl, token, GQL.TRANSACTIONS, vars);
+    const data = await copilotQuery(proxyUrl, token, GQL.TRANSACTIONS(year), vars);
     const page = data.transactions;
 
     for (const edge of page.edges || []) {
@@ -200,11 +194,27 @@ function copilotMatchCards(accounts) {
     'synchrony':        'Synchrony',
   };
 
+  // Copilot sometimes shows program/network names instead of card names.
+  // Map known patterns to card IDs directly.
+  const ACCOUNT_NAME_ALIASES = {
+    'ultimate rewards': ['chase-sapphire-reserve', 'chase-sapphire-preferred'],
+    'prime visa':       ['chase-amazon-prime'],
+  };
+
   const matched = new Set();
   const lowAccounts = accounts.map(a => ({
     ...a,
     nameLow: (a.name || '').toLowerCase(),
   }));
+
+  // Apply aliases first
+  for (const acct of lowAccounts) {
+    for (const [pattern, cardIds] of Object.entries(ACCOUNT_NAME_ALIASES)) {
+      if (acct.nameLow.includes(pattern)) {
+        for (const id of cardIds) matched.add(id);
+      }
+    }
+  }
 
   for (const card of CARDS) {
     const cardNameLow   = card.name.toLowerCase();
