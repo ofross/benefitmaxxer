@@ -210,12 +210,18 @@ function copilotMatchCards(accounts) {
     const cardNameLow   = card.name.toLowerCase();
     const cardIssuerLow = card.issuer.toLowerCase();
 
-    // Key words from the card name that are distinctive (skip generic words)
-    const SKIP_WORDS = new Set(['card', 'credit', 'the', 'and', 'plus', 'cash', 'back',
-                                'rewards', 'preferred', 'select', 'world', 'elite']);
+    // Generic words that add no matching signal
+    const SKIP_WORDS = new Set(['card', 'credit', 'the', 'and', 'plus', 'back',
+                                'select', 'world', 'elite', 'visa', 'mastercard']);
+    // Issuer names — already handled by the alias check above, strip from keywords
+    // so cards match even when the account name omits the issuer (e.g. "Sapphire Reserve")
+    const ISSUER_WORDS = new Set(['chase', 'amex', 'american', 'express', 'citi', 'citibank',
+                                  'capital', 'bank', 'america', 'wells', 'fargo', 'discover',
+                                  'barclays', 'goldman', 'sachs', 'navy', 'federal', 'penfed',
+                                  'synchrony', 'hsbc', 'bilt']);
     const cardKeywords = cardNameLow
       .split(/[\s®™]+/)
-      .filter(w => w.length > 3 && !SKIP_WORDS.has(w));
+      .filter(w => w.length > 3 && !SKIP_WORDS.has(w) && !ISSUER_WORDS.has(w));
 
     for (const acct of lowAccounts) {
       // Must be a credit card account type
