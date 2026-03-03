@@ -16,9 +16,8 @@ const GQL = {
   }`,
 
   ACCOUNTS: `query Accounts {
-    accounts(filter: {}) {
-      id name type mask balance color institutionId
-      isUserHidden isUserClosed isManual
+    accounts {
+      id name type
     }
   }`,
 
@@ -108,7 +107,7 @@ async function copilotVerify(proxyUrl, token) {
  */
 async function copilotFetchAccounts(proxyUrl, token) {
   const data = await copilotQuery(proxyUrl, token, GQL.ACCOUNTS);
-  return (data.accounts || []).filter(a => !a.isUserHidden && !a.isUserClosed);
+  return data.accounts || [];
 }
 
 /**
@@ -132,8 +131,8 @@ async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
 
   const filter = {
     dates: {
-      gte: `${year}-01-01`,
-      lte: `${year}-12-31`,
+      from: `${year}-01-01`,
+      to:   `${year}-12-31`,
     },
   };
 
