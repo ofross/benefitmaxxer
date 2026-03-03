@@ -64,6 +64,9 @@ async function copilotQuery(proxyUrl, token, query, variables = {}) {
     body: JSON.stringify({ query, variables }),
   });
 
+  if (res.status === 401) {
+    throw new Error('TOKEN_EXPIRED');
+  }
   if (!res.ok) {
     throw new Error(`Proxy returned HTTP ${res.status}. Check your proxy URL.`);
   }
