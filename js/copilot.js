@@ -125,7 +125,7 @@ async function copilotFetchCategories(proxyUrl, token) {
  * Fetch all transactions for a given year, handling pagination.
  * Returns normalized { date, description, category, amount } objects.
  */
-async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
+async function copilotFetchTransactions(proxyUrl, token, year, categoryMap, onProgress = null) {
   const allTxns = [];
   let after    = null;
   let hasMore  = true;
@@ -140,17 +140,18 @@ async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
     for (const edge of page.edges || []) {
       const t = edge.node;
 
-      // Skip pending transactions — they haven't cleared yet
       if (t.isPending) continue;
 
-      // Copilot amounts: negative = expense (money out), positive = income
-      // We only care about expenses for benefit matching
       const raw = parseFloat(t.amount);
-      if (isNaN(raw) || raw >= 0) continue; // skip income/zero
+      if (isNaN(raw) || raw >= 0) continue;
+
+      const txDate = new Date(t.date + 'T00:00:00');
+      // Client-side year guard — server filter may not be reliable
+      if (txDate.getFullYear() !== year) continue;
 
       allTxns.push({
         _copilotId: t.id,
-        date:        new Date(t.date + 'T00:00:00'),
+        date:        txDate,
         description: t.name || '',
         category:    categoryMap.get(t.categoryId) || '',
         amount:      Math.abs(raw),
@@ -159,6 +160,8 @@ async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
 
     hasMore = page.pageInfo.hasNextPage;
     after   = page.pageInfo.endCursor;
+
+    if (onProgress) onProgress(allTxns.length);
   }
 
   return allTxns;

@@ -1019,6 +1019,30 @@ details[open] .bank-instructions-chevron { transform: rotate(180deg); }
 .copilot-source-sub   { font-size: .76rem; color: var(--gray-500); }
 .copilot-source-header > div { flex: 1; }
 
+.copilot-fetch-progress {
+  margin-top: .65rem;
+  font-size: .83rem;
+  color: var(--gray-600);
+}
+.copilot-fetch-progress .progress-bar-track {
+  margin-top: .4rem;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--gray-200);
+  overflow: hidden;
+}
+.copilot-fetch-progress .progress-bar-fill {
+  height: 100%;
+  width: 40%;
+  border-radius: 99px;
+  background: var(--copilot, #7c3aed);
+  animation: copilot-progress-slide 1.4s ease-in-out infinite;
+}
+@keyframes copilot-progress-slide {
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(350%); }
+}
+
 .copilot-fetch-result {
   display: flex;
   align-items: center;

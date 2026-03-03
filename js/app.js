@@ -435,7 +435,16 @@ async function fetchCopilotTransactions() {
   const status = $('copilot-fetch-status');
   btn.disabled = true;
   btn.textContent = 'Fetching…';
-  status.innerHTML = '';
+  status.innerHTML = `
+    <div class="copilot-fetch-progress">
+      <span id="copilot-fetch-count">Fetching transactions…</span>
+      <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
+    </div>`;
+
+  const onProgress = count => {
+    const el = document.getElementById('copilot-fetch-count');
+    if (el) el.textContent = `Fetching… ${count.toLocaleString()} transactions so far`;
+  };
 
   try {
     const categoryMap = await copilotFetchCategories(
@@ -443,7 +452,7 @@ async function fetchCopilotTransactions() {
     );
     const txns = await copilotFetchTransactions(
       state.copilot.proxyUrl, state.copilot.token,
-      state.benefitYear, categoryMap
+      state.benefitYear, categoryMap, onProgress
     );
 
     state.copilot.transactions = txns;
