@@ -17,6 +17,7 @@ const CARDS = [
     annualFee: 550,
     color: '#1a1a2e',
     popular: true,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve',
     benefits: [
       {
         name: '$300 Annual Travel Credit',
@@ -80,6 +81,7 @@ const CARDS = [
     annualFee: 95,
     color: '#1e40af',
     popular: true,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred',
     benefits: [
       {
         name: '$50 Annual Hotel Credit',
@@ -109,6 +111,7 @@ const CARDS = [
     annualFee: 0,
     color: '#1e3a5f',
     popular: true,
+    benefitsUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/unlimited',
     benefits: [
       {
         name: '1.5% Cash Back on Everything',
@@ -129,6 +132,7 @@ const CARDS = [
     annualFee: 0,
     color: '#1e3a5f',
     popular: true,
+    benefitsUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/flex',
     benefits: [
       {
         name: '5% Rotating Categories Cash Back',
@@ -149,6 +153,7 @@ const CARDS = [
     annualFee: 0,
     color: '#ff9900',
     popular: true,
+    benefitsUrl: 'https://www.chase.com/personal/credit-cards/amazon',
     benefits: [
       {
         name: '5% Back at Amazon & Whole Foods',
@@ -169,6 +174,7 @@ const CARDS = [
     annualFee: 95,
     color: '#005daa',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/united/explorer',
     benefits: [
       {
         name: 'First Checked Bag Free',
@@ -206,6 +212,7 @@ const CARDS = [
     annualFee: 250,
     color: '#003087',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/united/quest',
     benefits: [
       {
         name: '$125 Annual United Credit',
@@ -228,6 +235,7 @@ const CARDS = [
     annualFee: 525,
     color: '#001f5b',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/united/club-infinite',
     benefits: [
       {
         name: 'United Club Membership',
@@ -247,6 +255,7 @@ const CARDS = [
     annualFee: 149,
     color: '#e31837',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/southwest-airlines/priority',
     benefits: [
       {
         name: '$75 Annual Southwest Credit',
@@ -276,6 +285,7 @@ const CARDS = [
     annualFee: 95,
     color: '#862633',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/hyatt',
     benefits: [
       {
         name: 'Free Anniversary Night',
@@ -295,6 +305,7 @@ const CARDS = [
     annualFee: 99,
     color: '#006747',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/ihg/premier',
     benefits: [
       {
         name: 'Free Anniversary Night',
@@ -324,6 +335,7 @@ const CARDS = [
     annualFee: 95,
     color: '#8b0000',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/marriott/boundless',
     benefits: [
       {
         name: 'Free Anniversary Night',
@@ -343,6 +355,7 @@ const CARDS = [
     annualFee: 95,
     color: '#003399',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/british-airways',
     benefits: [
       {
         name: 'Travel Together Ticket',
@@ -365,6 +378,7 @@ const CARDS = [
     annualFee: 0,
     color: '#3b82f6',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/cash-back-credit-cards/freedom/rise',
     benefits: [
       { name: '1.5% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5% on all purchases' }
     ]
@@ -377,6 +391,7 @@ const CARDS = [
     annualFee: 0,
     color: '#6b7280',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/credit-cards/slate-edge',
     benefits: [
       { name: '1% Cash Back', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01 }, description: '1% on all purchases' }
     ]
@@ -389,6 +404,7 @@ const CARDS = [
     annualFee: 49,
     color: '#00704a',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/starbucks',
     benefits: [
       { name: '3x Stars at Starbucks', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Starbucks': 0.03 }, description: 'Extra Stars on Starbucks purchases' }
     ]
@@ -401,6 +417,7 @@ const CARDS = [
     annualFee: 69,
     color: '#e31837',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/southwest-airlines/plus',
     benefits: [
       { name: '2x Points on Southwest', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Airlines': 0.02 }, description: '2x points on Southwest; 1x elsewhere' }
     ]
@@ -413,6 +430,7 @@ const CARDS = [
     annualFee: 99,
     color: '#c0392b',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/travel-credit-cards/southwest-airlines/premier',
     benefits: [
       { name: '2x Points on Southwest', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Airlines': 0.02 }, description: '2x points on Southwest; 1x elsewhere' }
     ]
@@ -425,6 +443,7 @@ const CARDS = [
     annualFee: 0,
     color: '#7f1d1d',
     popular: false,
+    benefitsUrl: 'https://creditcards.chase.com/rewards-credit-cards/marriott/bold',
     benefits: [
       { name: '3x Marriott Bonvoy Points', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Hotels': 0.03 }, description: '3x at Marriott; 2x travel; 1x elsewhere' }
     ]
@@ -441,6 +460,7 @@ const CARDS = [
     annualFee: 695,
     color: '#a8a9ad',
     popular: true,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/platinum/',
     benefits: [
       {
         name: '$200 Hotel Credit',
@@ -544,6 +564,7 @@ const CARDS = [
     annualFee: 250,
     color: '#c9a84c',
     popular: true,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/gold-card/',
     benefits: [
       {
         name: '$120 Dining Credit',
@@ -604,6 +625,7 @@ const CARDS = [
     annualFee: 150,
     color: '#22863a',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/amex-green-card/',
     benefits: [
       {
         name: '$199 CLEAR Plus Credit',
@@ -644,6 +666,7 @@ const CARDS = [
     annualFee: 95,
     color: '#0ea5e9',
     popular: true,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/',
     benefits: [
       {
         name: '6% Cash Back at Supermarkets',
@@ -664,6 +687,7 @@ const CARDS = [
     annualFee: 0,
     color: '#38bdf8',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/',
     benefits: [
       {
         name: '3% Cash Back at Supermarkets',
@@ -684,6 +708,7 @@ const CARDS = [
     annualFee: 150,
     color: '#cc2529',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-gold-american-express-card/',
     benefits: [
       {
         name: '$200 Delta Flight Credit',
@@ -691,16 +716,36 @@ const CARDS = [
         trackable: true,
         annualValue: 200,
         monthlyValue: null,
-        eligibleKeywords: ['delta', 'delta air lines'],
+        eligibleKeywords: ['delta', 'delta air lines', 'delta.com'],
         eligibleCategories: ['Airlines'],
-        description: '$200 credit toward Delta flights after $10k spend'
+        description: '$200 statement credit toward Delta flights after $10,000 in purchases in a calendar year'
+      },
+      {
+        name: '$100 Delta Stays Credit',
+        type: 'statement_credit',
+        trackable: true,
+        annualValue: 100,
+        monthlyValue: null,
+        eligibleKeywords: ['delta stays', 'deltastays'],
+        eligibleCategories: ['Hotels', 'Travel'],
+        description: 'Up to $100 annually toward prepaid hotels and vacation rentals booked through Delta Stays'
+      },
+      {
+        name: 'Uber One Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 60,
+        monthlyValue: 9.99,
+        eligibleKeywords: ['uber one', 'uber'],
+        eligibleCategories: ['Taxis & Rideshares'],
+        description: 'Up to $9.99/month toward Uber One membership (up to 6 months; offer through 6/25/2026)'
       },
       {
         name: 'First Checked Bag Free',
         type: 'membership',
         trackable: false,
         annualValue: 140,
-        description: 'Free first checked bag on Delta flights'
+        description: 'Free first checked bag for cardholder and up to 8 companions on same Delta reservation'
       }
     ]
   },
@@ -713,6 +758,7 @@ const CARDS = [
     annualFee: 350,
     color: '#a0a0a0',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-platinum-american-express-card/',
     benefits: [
       {
         name: '$200 Delta Flight Credit',
@@ -720,26 +766,87 @@ const CARDS = [
         trackable: true,
         annualValue: 200,
         monthlyValue: null,
-        eligibleKeywords: ['delta', 'delta air lines'],
+        eligibleKeywords: ['delta', 'delta air lines', 'delta.com'],
         eligibleCategories: ['Airlines'],
-        description: '$200 credit toward Delta flights after $10k spend'
+        description: '$200 statement credit toward Delta flights after $10,000 in purchases in a calendar year'
       },
       {
-        name: 'Companion Certificate',
+        name: '$150 Delta Stays Credit',
+        type: 'statement_credit',
+        trackable: true,
+        annualValue: 150,
+        monthlyValue: null,
+        eligibleKeywords: ['delta stays', 'deltastays'],
+        eligibleCategories: ['Hotels', 'Travel'],
+        description: 'Up to $150 annually toward prepaid hotels and vacation rentals booked through Delta Stays'
+      },
+      {
+        name: '$10/Month Resy Dining Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 120,
+        monthlyValue: 10,
+        eligibleKeywords: ['resy'],
+        eligibleCategories: ['Dining', 'Restaurants'],
+        description: 'Up to $10/month at enrolled U.S. Resy restaurants (requires enrollment)'
+      },
+      {
+        name: '$10/Month Rideshare Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 120,
+        monthlyValue: 10,
+        eligibleKeywords: ['uber', 'lyft', 'rideshare'],
+        eligibleCategories: ['Taxis & Rideshares'],
+        description: 'Up to $10/month toward eligible rideshare purchases (requires enrollment)'
+      },
+      {
+        name: 'Uber One Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 120,
+        monthlyValue: 9.99,
+        eligibleKeywords: ['uber one', 'uber'],
+        eligibleCategories: ['Taxis & Rideshares'],
+        description: 'Up to $9.99/month toward Uber One membership (up to 12 months; offer through 6/25/2026)'
+      },
+      {
+        name: 'Delta Sky Club Access (10 Visits)',
+        type: 'membership',
+        trackable: false,
+        annualValue: 290,
+        description: '10 Delta Sky Club visits per Medallion Year (as of Feb 2025); unlimited with $75k annual spend'
+      },
+      {
+        name: 'Companion Certificate (Main Cabin)',
         type: 'companion_cert',
         trackable: false,
-        annualValue: 500,
-        description: 'Annual domestic companion certificate'
+        annualValue: 400,
+        description: 'Annual round-trip companion certificate valid for Delta Main Cabin; US, Mexico, Caribbean, Central America'
       },
       {
         name: 'Global Entry / TSA PreCheck Credit',
         type: 'statement_credit',
         trackable: true,
-        annualValue: 100,
+        annualValue: 120,
         monthlyValue: null,
-        eligibleKeywords: ['global entry', 'tsa precheck', 'nexus', 'cbp'],
+        eligibleKeywords: ['global entry', 'tsa precheck', 'nexus', 'cbp', 'trusted traveler'],
         eligibleCategories: ['Government Services'],
-        description: 'Up to $100 every 4 years'
+        description: 'Up to $120 for Global Entry every 4 years, or up to $85 for TSA PreCheck every 4.5 years'
+      },
+      {
+        name: 'First Checked Bag Free',
+        type: 'membership',
+        trackable: false,
+        annualValue: 140,
+        description: 'Free first checked bag for cardholder and up to 8 companions on same Delta reservation'
+      },
+      {
+        name: '$2,500 MQD Headstart',
+        type: 'membership',
+        trackable: false,
+        annualValue: 75,
+        description: '$2,500 Medallion Qualifying Dollars deposited annually toward Silver Medallion status'
       }
     ]
   },
@@ -752,20 +859,102 @@ const CARDS = [
     annualFee: 650,
     color: '#2c2c2c',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-reserve-american-express-card/',
     benefits: [
       {
-        name: 'Delta Sky Club Access',
-        type: 'membership',
-        trackable: false,
-        annualValue: 500,
-        description: 'Unlimited Delta Sky Club access when flying Delta'
+        name: '$200 Delta Flight Credit',
+        type: 'statement_credit',
+        trackable: true,
+        annualValue: 200,
+        monthlyValue: null,
+        eligibleKeywords: ['delta', 'delta air lines', 'delta.com'],
+        eligibleCategories: ['Airlines'],
+        description: '$200 statement credit toward Delta flights after $10,000 in purchases in a calendar year'
       },
       {
-        name: 'Companion Certificate',
+        name: '$150 Delta Stays Credit',
+        type: 'statement_credit',
+        trackable: true,
+        annualValue: 150,
+        monthlyValue: null,
+        eligibleKeywords: ['delta stays', 'deltastays'],
+        eligibleCategories: ['Hotels', 'Travel'],
+        description: 'Up to $150 annually toward prepaid hotels and vacation rentals booked through Delta Stays'
+      },
+      {
+        name: '$20/Month Resy Dining Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 240,
+        monthlyValue: 20,
+        eligibleKeywords: ['resy'],
+        eligibleCategories: ['Dining', 'Restaurants'],
+        description: 'Up to $20/month at enrolled U.S. Resy restaurants (requires enrollment)'
+      },
+      {
+        name: '$10/Month Rideshare Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 120,
+        monthlyValue: 10,
+        eligibleKeywords: ['uber', 'lyft', 'rideshare'],
+        eligibleCategories: ['Taxis & Rideshares'],
+        description: 'Up to $10/month toward eligible rideshare purchases (requires enrollment)'
+      },
+      {
+        name: 'Uber One Credit',
+        type: 'monthly_credit',
+        trackable: true,
+        annualValue: 120,
+        monthlyValue: 9.99,
+        eligibleKeywords: ['uber one', 'uber'],
+        eligibleCategories: ['Taxis & Rideshares'],
+        description: 'Up to $9.99/month toward Uber One membership (up to 12 months; offer through 6/25/2026)'
+      },
+      {
+        name: 'Delta Sky Club Access (15 Visits)',
+        type: 'membership',
+        trackable: false,
+        annualValue: 435,
+        description: '15 Delta Sky Club visits per Medallion Year (as of Feb 2025); unlimited with $75k annual spend. Includes 4 One-Time Guest Passes'
+      },
+      {
+        name: 'Centurion & Escape Lounge Access',
+        type: 'membership',
+        trackable: false,
+        annualValue: 200,
+        description: 'Complimentary access to Amex Centurion Lounges and Escape Lounges when flying Delta on the Reserve card'
+      },
+      {
+        name: 'Companion Certificate (First/Comfort+/Main)',
         type: 'companion_cert',
         trackable: false,
         annualValue: 800,
-        description: 'Annual Business or First Class companion certificate'
+        description: 'Annual round-trip companion certificate valid for First Class, Delta Comfort+, or Main Cabin; US, Mexico, Caribbean, Central America'
+      },
+      {
+        name: 'Global Entry / TSA PreCheck Credit',
+        type: 'statement_credit',
+        trackable: true,
+        annualValue: 120,
+        monthlyValue: null,
+        eligibleKeywords: ['global entry', 'tsa precheck', 'nexus', 'cbp', 'trusted traveler'],
+        eligibleCategories: ['Government Services'],
+        description: 'Up to $120 for Global Entry every 4 years, or up to $85 for TSA PreCheck every 4 years'
+      },
+      {
+        name: 'First Checked Bag Free',
+        type: 'membership',
+        trackable: false,
+        annualValue: 140,
+        description: 'Free first checked bag for cardholder and up to 8 companions on same Delta reservation'
+      },
+      {
+        name: '$2,500 MQD Headstart',
+        type: 'membership',
+        trackable: false,
+        annualValue: 75,
+        description: '$2,500 Medallion Qualifying Dollars deposited annually, plus $1 MQD earned per $10 in purchases'
       }
     ]
   },
@@ -778,6 +967,7 @@ const CARDS = [
     annualFee: 150,
     color: '#003087',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/hilton-honors-american-express-surpass-card/',
     benefits: [
       {
         name: '$200 Hilton Credit (Quarterly)',
@@ -807,6 +997,7 @@ const CARDS = [
     annualFee: 550,
     color: '#003580',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/hilton-honors-american-express-aspire-card/',
     benefits: [
       {
         name: '$400 Hilton Resort Credit',
@@ -846,6 +1037,7 @@ const CARDS = [
     annualFee: 650,
     color: '#8b0000',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/marriott-bonvoy-brilliant/',
     benefits: [
       {
         name: '$300 Dining Credit',
@@ -875,6 +1067,7 @@ const CARDS = [
     annualFee: 250,
     color: '#991b1b',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/marriott-bonvoy-bevy-american-express-card/',
     benefits: [
       {
         name: 'Free Night Award',
@@ -897,6 +1090,7 @@ const CARDS = [
     annualFee: 0,
     color: '#3b82f6',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/amex-everyday-credit-card/',
     benefits: [
       { name: '2x Points at Supermarkets', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Grocery Stores': 0.02, 'Supermarkets': 0.02 }, description: '2x at U.S. supermarkets (up to $6k/yr); 1x elsewhere' }
     ]
@@ -909,6 +1103,7 @@ const CARDS = [
     annualFee: 95,
     color: '#2563eb',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/amex-everyday-preferred-credit-card/',
     benefits: [
       { name: '3x Points at Supermarkets', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Grocery Stores': 0.03, 'Supermarkets': 0.03, 'Gas Stations': 0.02 }, description: '3x at U.S. supermarkets; 2x gas; 1x elsewhere' }
     ]
@@ -921,8 +1116,10 @@ const CARDS = [
     annualFee: 0,
     color: '#dc2626',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-blue-american-express-card/',
     benefits: [
-      { name: '2x Miles on Delta', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Airlines': 0.02, 'Restaurants': 0.02 }, description: '2x on Delta and restaurants; 1x elsewhere' }
+      { name: '2x Miles on Delta & Dining', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Airlines': 0.02, 'Restaurants': 0.02, 'Dining': 0.02 }, description: '2x on Delta purchases and worldwide dining; 1x on everything else' },
+      { name: '20% In-Flight Savings', type: 'membership', trackable: false, annualValue: 50, description: '20% statement credit on eligible Delta in-flight purchases (food, beverages, audio headsets)' }
     ]
   },
   {
@@ -933,6 +1130,7 @@ const CARDS = [
     annualFee: 0,
     color: '#1d4ed8',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/hilton-honors-card/',
     benefits: [
       { name: '7x Points at Hilton', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.03, 'Hotels': 0.07 }, description: '7x at Hilton; 5x grocery, gas, restaurants; 3x elsewhere' }
     ]
@@ -945,6 +1143,7 @@ const CARDS = [
     annualFee: 0,
     color: '#0369a1',
     popular: false,
+    benefitsUrl: 'https://www.americanexpress.com/us/credit-cards/card/blue-business-cash/',
     benefits: [
       { name: '2% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '2% on all eligible purchases (up to $50k/yr)' }
     ]
@@ -961,6 +1160,7 @@ const CARDS = [
     annualFee: 395,
     color: '#1a1a2e',
     popular: true,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/venture-x/',
     benefits: [
       {
         name: '$300 Annual Travel Credit',
@@ -1008,6 +1208,7 @@ const CARDS = [
     annualFee: 95,
     color: '#1e293b',
     popular: true,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/venture/',
     benefits: [
       {
         name: 'Global Entry / TSA PreCheck Credit ($100)',
@@ -1038,6 +1239,7 @@ const CARDS = [
     annualFee: 95,
     color: '#7c3aed',
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/savor/',
     benefits: [
       {
         name: '4% Cash Back on Dining & Entertainment',
@@ -1061,6 +1263,7 @@ const CARDS = [
     annualFee: 0,
     color: '#374151',
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/ventureone/',
     benefits: [
       { name: '1.25x Miles on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.0125, 'Hotels': 0.05, 'Car Rental': 0.05 }, description: '5x on hotels/rentals via Cap1 Travel; 1.25x elsewhere' }
     ]
@@ -1073,6 +1276,7 @@ const CARDS = [
     annualFee: 0,
     color: '#6d28d9',
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/savorone/',
     benefits: [
       { name: '3% Cash Back on Dining', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Restaurants': 0.03, 'Dining': 0.03, 'Entertainment': 0.03, 'Grocery Stores': 0.03 }, description: '3% dining, entertainment, grocery; 1% elsewhere' }
     ]
@@ -1084,6 +1288,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/quicksilver/',
     color: '#9ca3af',
     benefits: [
       { name: '1.5% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5% on all purchases' }
@@ -1096,6 +1301,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 39,
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/quicksilverone/',
     color: '#6b7280',
     benefits: [
       { name: '1.5% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5% on all purchases' }
@@ -1108,6 +1314,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/platinum/',
     color: '#d1d5db',
     benefits: [
       { name: 'No Rewards', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0 }, description: 'No rewards — credit building card' }
@@ -1120,6 +1327,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 150,
     popular: false,
+    benefitsUrl: 'https://www.capitalone.com/credit-cards/spark-cash-plus/',
     color: '#1e3a5f',
     benefits: [
       { name: '2% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '2% unlimited cash back on all purchases' }
@@ -1137,6 +1345,7 @@ const CARDS = [
     annualFee: 95,
     color: '#003da5',
     popular: true,
+    benefitsUrl: 'https://www.citi.com/credit-cards/citi-strata-premier-card/',
     benefits: [
       {
         name: '$100 Annual Hotel Savings Benefit',
@@ -1167,6 +1376,7 @@ const CARDS = [
     annualFee: 595,
     color: '#0078d4',
     popular: false,
+    benefitsUrl: 'https://www.citi.com/credit-cards/american-airlines/citi-aadvantage-executive-world-elite-mastercard/',
     benefits: [
       {
         name: 'Admirals Club Membership',
@@ -1196,6 +1406,7 @@ const CARDS = [
     annualFee: 0,
     color: '#0073aa',
     popular: true,
+    benefitsUrl: 'https://www.citi.com/credit-cards/costco/',
     benefits: [
       {
         name: '4% Cash Back on Gas & EV',
@@ -1218,6 +1429,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: true,
+    benefitsUrl: 'https://www.citi.com/credit-cards/citi-double-cash-credit-card/',
     color: '#1d4ed8',
     benefits: [
       { name: '2% Cash Back (1% + 1%)', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '1% when you buy + 1% when you pay — effectively 2% on all purchases' }
@@ -1230,6 +1442,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.citi.com/credit-cards/citi-custom-cash-card/',
     color: '#2563eb',
     benefits: [
       { name: '5% on Top Category (up to $500/month)', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Restaurants': 0.05, 'Gas Stations': 0.05, 'Grocery Stores': 0.05, 'Airlines': 0.05, 'Hotels': 0.05 }, description: '5% automatically on your top spend category each billing cycle (up to $500)' }
@@ -1242,6 +1455,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.citi.com/credit-cards/citi-rewards-plus-credit-card/',
     color: '#3b82f6',
     benefits: [
       { name: '2x Points at Gas & Groceries', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Gas Stations': 0.02, 'Grocery Stores': 0.02 }, description: '2x at gas & grocery (up to $6k/yr); 1x elsewhere' }
@@ -1254,6 +1468,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.citi.com/credit-cards/citi-simplicity-card/',
     color: '#6b7280',
     benefits: [
       { name: 'No Rewards', type: 'cashback', trackable: false, annualValue: null, categories: { default: 0 }, description: 'No rewards — 0% APR balance transfer card' }
@@ -1266,6 +1481,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.citi.com/credit-cards/citi-diamond-preferred-card/',
     color: '#9ca3af',
     benefits: [
       { name: 'No Rewards', type: 'cashback', trackable: false, annualValue: null, categories: { default: 0 }, description: 'No rewards — low APR card' }
@@ -1278,6 +1494,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 99,
     popular: false,
+    benefitsUrl: 'https://www.citi.com/credit-cards/american-airlines/citi-aadvantage-platinum-select-world-elite-mastercard/',
     color: '#0078d4',
     benefits: [
       { name: '2x Miles on AA, Restaurants, Gas', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Airlines': 0.02, 'Restaurants': 0.02, 'Gas Stations': 0.02 }, description: '2x miles on AA, dining, gas; 1x elsewhere' }
@@ -1295,6 +1512,7 @@ const CARDS = [
     annualFee: 95,
     color: '#cc0000',
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/premium-rewards-credit-card/',
     benefits: [
       {
         name: '$100 Airline Incidental Credit',
@@ -1335,6 +1553,7 @@ const CARDS = [
     annualFee: 550,
     color: '#990000',
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/premium-rewards-elite-credit-card/',
     benefits: [
       {
         name: '$300 Annual Airline Credit',
@@ -1367,6 +1586,7 @@ const CARDS = [
     annualFee: 75,
     color: '#01426a',
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/alaska-airlines-visa-signature-credit-card/',
     benefits: [
       {
         name: 'Companion Fare',
@@ -1395,6 +1615,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/travel-rewards-credit-card/',
     color: '#ef4444',
     benefits: [
       { name: '1.5x Points on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5x points on all purchases (no foreign transaction fees)' }
@@ -1407,6 +1628,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/cash-back-credit-card/',
     color: '#dc2626',
     benefits: [
       { name: '3% on Choice Category', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Gas Stations': 0.03, 'Grocery Stores': 0.02 }, description: '3% on your chosen category (gas, online shopping, dining, travel, drug stores, home improvement); 2% grocery; 1% else' }
@@ -1419,6 +1641,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/unlimited-cash-reward-credit-card/',
     color: '#b91c1c',
     benefits: [
       { name: '1.5% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5% on all purchases' }
@@ -1431,6 +1654,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 89,
     popular: false,
+    benefitsUrl: 'https://www.bankofamerica.com/credit-cards/products/air-france-klm-world-elite-mastercard/',
     color: '#003087',
     benefits: [
       { name: '3x Miles on AF/KLM', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015, 'Airlines': 0.03 }, description: '3x on Air France/KLM; 1.5x elsewhere' }
@@ -1448,6 +1672,7 @@ const CARDS = [
     annualFee: 400,
     color: '#cc0000',
     popular: false,
+    benefitsUrl: 'https://www.usbank.com/credit-cards/altitude-reserve-visa-infinite-credit-card.html',
     benefits: [
       {
         name: '$325 Annual Travel Credit',
@@ -1480,6 +1705,7 @@ const CARDS = [
     annualFee: 95,
     color: '#dc2626',
     popular: false,
+    benefitsUrl: 'https://www.usbank.com/credit-cards/altitude-connect-visa-signature-credit-card.html',
     benefits: [
       {
         name: '$30 Streaming Credit',
@@ -1509,6 +1735,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.usbank.com/credit-cards/cash-plus-visa-signature-credit-card.html',
     color: '#ef4444',
     benefits: [
       { name: '5% on Two Choice Categories', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Gas Stations': 0.05, 'Grocery Stores': 0.02 }, description: '5% on two chosen categories (up to $2k/qtr combined); 2% everyday category; 1% else' }
@@ -1522,6 +1749,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 95,
     popular: false,
+    benefitsUrl: 'https://www.usbank.com/credit-cards/shopper-cash-rewards-visa-signature-credit-card.html',
     color: '#b91c1c',
     benefits: [
       { name: '6% at Two Merchants', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '6% at two chosen retailers (up to $1,500/qtr); 3% on prepaid hotel/car via US Bank; 1.5% elsewhere' }
@@ -1539,6 +1767,7 @@ const CARDS = [
     annualFee: 0,
     color: '#1a1a2e',
     popular: true,
+    benefitsUrl: 'https://bilt.com/card',
     benefits: [
       {
         name: '1x Points on Rent (No Fee)',
@@ -1559,6 +1788,7 @@ const CARDS = [
     annualFee: 95,
     color: '#003087',
     popular: false,
+    benefitsUrl: 'https://www.penfed.org/credit-cards/penfed-pathfinder-rewards-american-express-card',
     benefits: [
       {
         name: '$100 Annual Airline Credit',
@@ -1589,6 +1819,7 @@ const CARDS = [
     annualFee: 395,
     color: '#db2f2f',
     popular: false,
+    benefitsUrl: 'https://www.us.hsbc.com/credit-cards/premier-world-mastercard/',
     benefits: [
       {
         name: '$400 Annual Travel Credit',
@@ -1611,6 +1842,7 @@ const CARDS = [
     annualFee: 99,
     color: '#0033a0',
     popular: false,
+    benefitsUrl: 'https://cards.barclaycardus.com/banking/cards/jetblue-plus-card/',
     benefits: [
       {
         name: '$100 JetBlue Anniversary Credit',
@@ -1641,6 +1873,7 @@ const CARDS = [
     annualFee: 95,
     color: '#cc0000',
     popular: false,
+    benefitsUrl: 'https://www.wellsfargo.com/credit-cards/autograph-journey-card/',
     benefits: [
       {
         name: '$50 Annual Airline Credit',
@@ -1673,6 +1906,7 @@ const CARDS = [
     network: 'Discover',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.discover.com/credit-cards/cash-back/it-card.html',
     color: '#f97316',
     benefits: [
       { name: '5% Rotating Categories', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Grocery Stores': 0.05, 'Gas Stations': 0.05, 'Restaurants': 0.05, 'Amazon': 0.05 }, description: '5% on rotating quarterly categories (up to $1,500); 1% everywhere else (1st year match)' }
@@ -1685,6 +1919,7 @@ const CARDS = [
     network: 'Discover',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.discover.com/credit-cards/travel/it-miles-card.html',
     color: '#fb923c',
     benefits: [
       { name: '1.5x Miles on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5x on all purchases (1st year match)' }
@@ -1697,6 +1932,7 @@ const CARDS = [
     network: 'Discover',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.discover.com/credit-cards/student/',
     color: '#fdba74',
     benefits: [
       { name: '5% Rotating + 1% Student', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01 }, description: 'Same 5% rotating categories as standard Discover it' }
@@ -1709,6 +1945,7 @@ const CARDS = [
     network: 'Discover',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.discover.com/credit-cards/cash-back/chrome-card.html',
     color: '#fed7aa',
     benefits: [
       { name: '2% at Gas & Restaurants', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Gas Stations': 0.02, 'Restaurants': 0.02 }, description: '2% at gas & restaurants (up to $1k/qtr); 1% elsewhere' }
@@ -1725,6 +1962,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.wellsfargo.com/credit-cards/active-cash-card/',
     color: '#dc2626',
     benefits: [
       { name: '2% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '2% unlimited cash rewards on purchases' }
@@ -1737,6 +1975,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.wellsfargo.com/credit-cards/autograph-card/',
     color: '#ef4444',
     benefits: [
       { name: '3x on Restaurants, Travel, Gas, Transit, Streaming', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Restaurants': 0.03, 'Dining': 0.03, 'Travel': 0.03, 'Gas Stations': 0.03, 'Streaming': 0.03 }, description: '3x on dining, travel, gas, transit, phone, streaming; 1x elsewhere' }
@@ -1749,6 +1988,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.wellsfargo.com/credit-cards/reflect-card/',
     color: '#f87171',
     benefits: [
       { name: 'No Rewards', type: 'cashback', trackable: false, annualValue: null, categories: { default: 0 }, description: 'No rewards — 0% intro APR card' }
@@ -1765,6 +2005,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: true,
+    benefitsUrl: 'https://www.apple.com/apple-card/',
     color: '#1c1c1e',
     benefits: [
       { name: '3% Daily Cash at Apple', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Apple': 0.03, 'Restaurants': 0.02, 'Gas Stations': 0.02, 'Grocery Stores': 0.02 }, description: '3% at Apple; 2% via Apple Pay; 1% elsewhere' }
@@ -1777,6 +2018,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.fidelity.com/cash-management/visa-signature-card',
     color: '#006400',
     benefits: [
       { name: '2% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '2% deposited into Fidelity account' }
@@ -1789,6 +2031,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.paypal.com/us/digital-wallet/manage-money/paypal-cashback-mastercard',
     color: '#003087',
     benefits: [
       { name: '3% on PayPal / 1.5% Elsewhere', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015, 'PayPal': 0.03 }, description: '3% cash back with PayPal; 1.5% everywhere else' }
@@ -1801,6 +2044,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.sofi.com/credit-card/',
     color: '#7c3aed',
     benefits: [
       { name: '2% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '2% cash back on all purchases (with SoFi banking)' }
@@ -1813,6 +2057,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 49,
     popular: false,
+    benefitsUrl: 'https://www.navyfederal.org/loans-cards/credit-cards/flagship-rewards/',
     color: '#003087',
     benefits: [
       { name: '3x on Travel', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02, 'Travel': 0.03 }, description: '3x on travel; 2x everywhere else' }
@@ -1825,6 +2070,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.penfed.org/credit-cards/penfed-power-cash-rewards-visa-signature-card',
     color: '#1d4ed8',
     benefits: [
       { name: '2% Cash Back (PenFed members)', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: '2% cash back for Honors Advantage members; 1.5% otherwise' }
@@ -1837,6 +2083,7 @@ const CARDS = [
     network: 'Amex',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.breadfinancial.com/en/consumer/credit-cards/bread-cashback.html',
     color: '#92400e',
     benefits: [
       { name: '2% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.02 }, description: 'Unlimited 2% cash back on all purchases' }
@@ -1849,6 +2096,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.samsclub.com/credit',
     color: '#003f88',
     benefits: [
       { name: '5% at Gas / 3% Dining & Travel', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Gas Stations': 0.05, 'Restaurants': 0.03, 'Dining': 0.03, 'Travel': 0.03 }, description: '5% gas; 3% dining & travel; 1% everywhere' }
@@ -1861,6 +2109,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.target.com/redcard/',
     color: '#cc0000',
     benefits: [
       { name: '5% at Target', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0, 'Target': 0.05 }, description: '5% discount at Target in-store and online' }
@@ -1873,6 +2122,7 @@ const CARDS = [
     network: 'Store',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.amazon.com/store-card/',
     color: '#ff9900',
     benefits: [
       { name: '5% Back at Amazon (with Prime)', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0, 'Amazon': 0.05 }, description: '5% back at Amazon with Prime; 0% otherwise (or special financing)' }
@@ -1885,6 +2135,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://robinhood.com/us/en/about/credit-card/',
     color: '#00c805',
     benefits: [
       { name: '3% Cash Back on Everything', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.03 }, description: '3% unlimited cash back on all purchases (Robinhood Gold required)' }
@@ -1897,6 +2148,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://venmo.com/venmo-debit-card/',
     color: '#008cff',
     benefits: [
       { name: '3% Top Category / 2% Second / 1% Else', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Restaurants': 0.03, 'Gas Stations': 0.02 }, description: 'Automatically earns 3% on your top category, 2% second, 1% elsewhere' }
@@ -1909,6 +2161,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.upgrade.com/credit-card/',
     color: '#7c3aed',
     benefits: [
       { name: '1.5% Cash Back on Payments', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1.5% cash back applied when you make payments on your balance' }
@@ -1921,6 +2174,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 59,
     popular: false,
+    benefitsUrl: 'https://missionlane.com/',
     color: '#1d4ed8',
     benefits: [
       { name: '1%-1.5% Cash Back', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: 'Up to 1.5% cash back on all purchases' }
@@ -1933,6 +2187,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 0,
     popular: false,
+    benefitsUrl: 'https://www.petalcard.com/',
     color: '#059669',
     benefits: [
       { name: '1%-1.5% Cash Back', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.015 }, description: '1% at first; up to 1.5% after 12 on-time payments' }
@@ -1945,6 +2200,7 @@ const CARDS = [
     network: 'Visa',
     annualFee: 75,
     popular: false,
+    benefitsUrl: 'https://cards.barclaycardus.com/banking/cards/wyndham-rewards-earner-plus-card/',
     color: '#003087',
     benefits: [
       { name: '6x at Wyndham Hotels & Gas', type: 'cashback', trackable: true, annualValue: null, categories: { default: 0.01, 'Hotels': 0.06, 'Gas Stations': 0.06 }, description: '6x at Wyndham and gas; 4x dining; 1x elsewhere' }
@@ -1957,6 +2213,7 @@ const CARDS = [
     network: 'Mastercard',
     annualFee: 99,
     popular: false,
+    benefitsUrl: 'https://cards.barclaycardus.com/banking/cards/hawaiian-airlines-world-elite-mastercard/',
     color: '#6d28d9',
     benefits: [
       {
