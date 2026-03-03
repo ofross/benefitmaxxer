@@ -228,9 +228,10 @@ function copilotMatchCards(accounts) {
       }
       if (resolvedIssuer && resolvedIssuer !== card.issuer) continue;
 
-      // Score: count how many of the card's keywords appear in the account name
+      // All distinctive keywords must appear in the account name
+      if (cardKeywords.length === 0) continue;
       const hits = cardKeywords.filter(kw => acct.nameLow.includes(kw)).length;
-      if (hits >= Math.max(1, Math.floor(cardKeywords.length * 0.6))) {
+      if (hits === cardKeywords.length) {
         matched.add(card.id);
         break;
       }
