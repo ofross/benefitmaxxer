@@ -264,12 +264,12 @@ async function onCopilotConnected() {
     renderCardGrid();
     updateStep1Bar();
 
-    if (matchedIds.length > 0) {
-      $('copilot-connected-label').textContent =
-        `Copilot connected — ${matchedIds.length} card${matchedIds.length !== 1 ? 's' : ''} auto-selected`;
-    }
-  } catch {
-    // Card matching is best-effort — don't block the flow
+    const label = matchedIds.length > 0
+      ? `Copilot connected — ${matchedIds.length} card${matchedIds.length !== 1 ? 's' : ''} auto-selected`
+      : `Copilot connected — ${accounts.length} account${accounts.length !== 1 ? 's' : ''} found, no cards matched (select manually)`;
+    $('copilot-connected-label').textContent = label;
+  } catch (err) {
+    $('copilot-connected-label').textContent = `Copilot connected (accounts: ${err.message})`;
   }
 
   // Show Copilot panel in Step 2

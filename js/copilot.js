@@ -131,7 +131,7 @@ async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
   let hasMore  = true;
 
   const filter = {
-    date: {
+    dates: {
       gte: `${year}-01-01`,
       lte: `${year}-12-31`,
     },
