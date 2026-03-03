@@ -47,6 +47,25 @@
         <p>Select all the cards you want to track benefits for.</p>
       </div>
 
+      <!-- Copilot connect banner -->
+      <div class="copilot-banner" id="copilot-banner">
+        <div class="copilot-banner-left">
+          <span class="copilot-logo">✦</span>
+          <div>
+            <div class="copilot-banner-title">Have Copilot Money?</div>
+            <div class="copilot-banner-sub">Connect to auto-select your cards and import transactions automatically.</div>
+          </div>
+        </div>
+        <button class="btn btn-copilot" id="copilot-connect-btn">Connect Copilot</button>
+      </div>
+
+      <!-- Shown once connected -->
+      <div class="copilot-connected-bar" id="copilot-connected-bar" style="display:none">
+        <span class="copilot-connected-icon">&#10003;</span>
+        <span id="copilot-connected-label">Copilot connected</span>
+        <button class="btn-link" id="copilot-disconnect-btn">Disconnect</button>
+      </div>
+
       <div class="card-filters">
         <div class="search-wrap">
           <input type="text" id="card-search" class="search-input" placeholder="Search cards..." autocomplete="off">
@@ -78,6 +97,22 @@
       <div class="step-header">
         <h2>Upload your spending reports</h2>
         <p>Export a CSV from each bank's website and drop them here — one per bank account. All processing is local, your data never leaves your browser.</p>
+      </div>
+
+      <!-- Copilot data source (shown when connected) -->
+      <div id="copilot-source-panel" style="display:none">
+        <div class="copilot-source-card">
+          <div class="copilot-source-header">
+            <span class="copilot-source-icon">✦</span>
+            <div>
+              <div class="copilot-source-title">Import from Copilot</div>
+              <div class="copilot-source-sub" id="copilot-source-sub">Fetches all transactions for the selected year directly from your Copilot account.</div>
+            </div>
+            <button class="btn btn-copilot" id="copilot-fetch-btn">Fetch Transactions</button>
+          </div>
+          <div id="copilot-fetch-status"></div>
+        </div>
+        <div class="source-divider"><span>or upload a CSV manually</span></div>
       </div>
 
       <!-- Bank export instructions -->
@@ -178,6 +213,9 @@
         <!-- populated by JS -->
       </div>
 
+      <!-- Copilot reminders (shown when Copilot is connected) -->
+      <div id="copilot-reminders"></div>
+
       <!-- Overlap & Recommendations panel (hidden when only 1 card) -->
       <div id="overlap-panel"></div>
 
@@ -192,11 +230,63 @@
 
       <div class="step-actions">
         <button class="btn btn-secondary" id="step3-back">&#8592; Back to Upload</button>
+        <button class="btn btn-secondary" id="copilot-tag-btn" style="display:none">&#128278; Tag in Copilot</button>
         <button class="btn btn-secondary" id="step3-restart">&#8635; Start Over</button>
       </div>
     </section>
 
   </main>
+
+  <!-- Copilot Connect Modal -->
+  <div class="modal-overlay" id="copilot-modal" style="display:none">
+    <div class="modal-dialog copilot-modal-dialog" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h3 class="modal-title">&#10022; Connect Copilot Money</h3>
+        <button class="btn-icon modal-close" id="copilot-modal-close" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="copilot-modal-section">
+          <label class="copilot-field-label" for="copilot-proxy-url">Your proxy URL</label>
+          <input type="url" id="copilot-proxy-url" class="copilot-input"
+            placeholder="https://benefitmaxxer-proxy.YOUR_NAME.workers.dev">
+          <p class="copilot-field-hint">
+            Deploy <code>worker/copilot-proxy.js</code> to Cloudflare Workers, then paste the URL above.
+            This is a stateless relay you control — it never logs or stores your token.
+          </p>
+        </div>
+
+        <div class="copilot-modal-section">
+          <label class="copilot-field-label" for="copilot-token">Bearer token</label>
+          <input type="password" id="copilot-token" class="copilot-input" placeholder="Paste your Copilot JWT here">
+          <details class="copilot-token-help">
+            <summary>How to get your token</summary>
+            <ol>
+              <li>Open <strong>app.copilot.money</strong> in a new tab and log in.</li>
+              <li>Open DevTools: <kbd>F12</kbd> or <kbd>Cmd &#8997; I</kbd></li>
+              <li>Go to the <strong>Network</strong> tab &rarr; filter for <code>graphql</code>.</li>
+              <li>Click any transaction or reload the page to trigger a request.</li>
+              <li>Click a <code>graphql</code> request &rarr; <strong>Headers</strong> tab.</li>
+              <li>Find <code>Authorization: Bearer &hellip;</code> and copy everything after <code>Bearer </code>.</li>
+            </ol>
+            <p class="copilot-token-note">
+              &#128274; Your token is held in memory only. It is never written to disk, localStorage, or any server.
+              It expires automatically when your Copilot session ends.
+            </p>
+          </details>
+        </div>
+
+        <div id="copilot-modal-error" class="copilot-modal-error" style="display:none"></div>
+
+      </div>
+      <div class="modal-footer" style="justify-content:flex-end;gap:.75rem;display:flex">
+        <button class="btn btn-secondary" id="copilot-modal-cancel">Cancel</button>
+        <button class="btn btn-copilot" id="copilot-modal-connect">
+          <span id="copilot-modal-connect-label">Connect</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <footer class="app-footer">
     <p>BenefitMaxxer &mdash; All data processed locally in your browser. No data is stored or transmitted.</p>
@@ -205,6 +295,7 @@
   <script src="js/data.js"></script>
   <script src="js/parser.js"></script>
   <script src="js/correlator.js"></script>
+  <script src="js/copilot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

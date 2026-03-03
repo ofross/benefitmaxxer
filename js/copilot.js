@@ -1,0 +1,288 @@
+/* ==========================================
+   copilot.js — Copilot Money API Client
+   Communicates through the user-deployed CORS proxy.
+   The JWT token is held in memory only — never written to
+   localStorage, sessionStorage, or any server.
+   ========================================== */
+
+'use strict';
+
+/* ─── GraphQL Queries ─── */
+
+const GQL = {
+
+  USER: `query User {
+    user { id email name }
+  }`,
+
+  ACCOUNTS: `query Accounts {
+    accounts(filter: {}) {
+      id name type mask balance color institutionId
+      isUserHidden isUserClosed isManual
+    }
+  }`,
+
+  CATEGORIES: `query Categories {
+    categories { id name }
+  }`,
+
+  TAGS: `query Tags {
+    tags { id name colorName }
+  }`,
+
+  // Paginated — call repeatedly until hasNextPage is false
+  TRANSACTIONS: `query Transactions($first: Int, $after: String, $filter: TransactionFilter) {
+    transactions(first: $first, after: $after, filter: $filter) {
+      edges {
+        cursor
+        node {
+          id date name amount type categoryId accountId isPending
+        }
+      }
+      pageInfo { hasNextPage endCursor }
+    }
+  }`,
+
+  CREATE_TAG: `mutation CreateTag($name: String!, $colorName: String!) {
+    createTag(name: $name, colorName: $colorName) { id name colorName }
+  }`,
+
+  EDIT_TRANSACTION: `mutation EditTransaction($id: ID!, $changes: TransactionChanges!) {
+    editTransaction(id: $id, changes: $changes) { id tags { id name } }
+  }`,
+};
+
+/* ─── Core request helper ─── */
+
+async function copilotQuery(proxyUrl, token, query, variables = {}) {
+  const res = await fetch(proxyUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Proxy returned HTTP ${res.status}. Check your proxy URL.`);
+  }
+
+  const json = await res.json();
+
+  if (json.errors && json.errors.length > 0) {
+    const msg = json.errors[0].message || 'Unknown GraphQL error';
+    if (msg.toLowerCase().includes('unauthenticated') || msg.toLowerCase().includes('unauthorized')) {
+      throw new Error('TOKEN_EXPIRED');
+    }
+    throw new Error(msg);
+  }
+
+  return json.data;
+}
+
+/* ─── Public API ─── */
+
+/**
+ * Validate connection by fetching the current user.
+ * Returns { id, email, name } or throws.
+ */
+async function copilotVerify(proxyUrl, token) {
+  const data = await copilotQuery(proxyUrl, token, GQL.USER);
+  return data.user;
+}
+
+/**
+ * Fetch all (non-hidden, non-closed) accounts.
+ * Returns raw Copilot account objects.
+ */
+async function copilotFetchAccounts(proxyUrl, token) {
+  const data = await copilotQuery(proxyUrl, token, GQL.ACCOUNTS);
+  return (data.accounts || []).filter(a => !a.isUserHidden && !a.isUserClosed);
+}
+
+/**
+ * Fetch all categories and return a Map: id → name.
+ */
+async function copilotFetchCategories(proxyUrl, token) {
+  const data = await copilotQuery(proxyUrl, token, GQL.CATEGORIES);
+  const map = new Map();
+  for (const c of data.categories || []) map.set(c.id, c.name);
+  return map;
+}
+
+/**
+ * Fetch all transactions for a given year, handling pagination.
+ * Returns normalized { date, description, category, amount } objects.
+ */
+async function copilotFetchTransactions(proxyUrl, token, year, categoryMap) {
+  const allTxns = [];
+  let after    = null;
+  let hasMore  = true;
+
+  const filter = {
+    date: {
+      gte: `${year}-01-01`,
+      lte: `${year}-12-31`,
+    },
+  };
+
+  while (hasMore) {
+    const vars = { first: 200, filter };
+    if (after) vars.after = after;
+
+    const data = await copilotQuery(proxyUrl, token, GQL.TRANSACTIONS, vars);
+    const page = data.transactions;
+
+    for (const edge of page.edges || []) {
+      const t = edge.node;
+
+      // Skip pending transactions — they haven't cleared yet
+      if (t.isPending) continue;
+
+      // Copilot amounts: negative = expense (money out), positive = income
+      // We only care about expenses for benefit matching
+      const raw = parseFloat(t.amount);
+      if (isNaN(raw) || raw >= 0) continue; // skip income/zero
+
+      allTxns.push({
+        _copilotId: t.id,
+        date:        new Date(t.date + 'T00:00:00'),
+        description: t.name || '',
+        category:    categoryMap.get(t.categoryId) || '',
+        amount:      Math.abs(raw),
+      });
+    }
+
+    hasMore = page.pageInfo.hasNextPage;
+    after   = page.pageInfo.endCursor;
+  }
+
+  return allTxns;
+}
+
+/**
+ * Match Copilot accounts to cards in our CARDS database.
+ * Returns an array of card IDs that were confidently matched.
+ *
+ * Matching strategy (in order of confidence):
+ *  1. Exact card name substring match (e.g. "Sapphire Reserve" in account name)
+ *  2. Issuer name match + partial card name match
+ *  3. Issuer-only match as a fallback (lower confidence, not auto-selected)
+ */
+function copilotMatchCards(accounts) {
+  const ISSUER_ALIASES = {
+    'american express': 'Amex',
+    'amex':             'Amex',
+    'chase':            'Chase',
+    'citi':             'Citi',
+    'citibank':         'Citi',
+    'bank of america':  'BofA',
+    'bofa':             'BofA',
+    'capital one':      'Capital One',
+    'wells fargo':      'Wells Fargo',
+    'us bank':          'US Bank',
+    'discover':         'Discover',
+    'barclays':         'Barclays',
+    'goldman sachs':    'Goldman Sachs',
+    'apple':            'Goldman Sachs',
+    'navy federal':     'Navy Federal',
+    'penfed':           'PenFed',
+    'synchrony':        'Synchrony',
+  };
+
+  const matched = new Set();
+  const lowAccounts = accounts.map(a => ({
+    ...a,
+    nameLow: (a.name || '').toLowerCase(),
+  }));
+
+  for (const card of CARDS) {
+    const cardNameLow   = card.name.toLowerCase();
+    const cardIssuerLow = card.issuer.toLowerCase();
+
+    // Key words from the card name that are distinctive (skip generic words)
+    const SKIP_WORDS = new Set(['card', 'credit', 'the', 'and', 'plus', 'cash', 'back',
+                                'rewards', 'preferred', 'select', 'world', 'elite']);
+    const cardKeywords = cardNameLow
+      .split(/[\s®™]+/)
+      .filter(w => w.length > 3 && !SKIP_WORDS.has(w));
+
+    for (const acct of lowAccounts) {
+      // Must be a credit card account type
+      if (acct.type && !['credit', 'loan'].includes(acct.type.toLowerCase())) continue;
+
+      // Resolve issuer alias from account name
+      let resolvedIssuer = null;
+      for (const [alias, issuer] of Object.entries(ISSUER_ALIASES)) {
+        if (acct.nameLow.includes(alias)) { resolvedIssuer = issuer; break; }
+      }
+      if (resolvedIssuer && resolvedIssuer !== card.issuer) continue;
+
+      // Score: count how many of the card's keywords appear in the account name
+      const hits = cardKeywords.filter(kw => acct.nameLow.includes(kw)).length;
+      if (hits >= Math.max(1, Math.floor(cardKeywords.length * 0.6))) {
+        matched.add(card.id);
+        break;
+      }
+    }
+  }
+
+  return [...matched];
+}
+
+/* ─── Copilot write-back: tag matched transactions ─── */
+
+const BENEFITMAXXER_TAG_NAME  = 'BenefitMaxxer';
+const BENEFITMAXXER_TAG_COLOR = 'green';
+
+/**
+ * Ensure the BenefitMaxxer tag exists in Copilot; return its id.
+ */
+async function copilotEnsureTag(proxyUrl, token) {
+  const data = await copilotQuery(proxyUrl, token, GQL.TAGS);
+  const existing = (data.tags || []).find(
+    t => t.name.toLowerCase() === BENEFITMAXXER_TAG_NAME.toLowerCase()
+  );
+  if (existing) return existing.id;
+
+  const created = await copilotQuery(proxyUrl, token, GQL.CREATE_TAG, {
+    name:      BENEFITMAXXER_TAG_NAME,
+    colorName: BENEFITMAXXER_TAG_COLOR,
+  });
+  return created.createTag.id;
+}
+
+/**
+ * Tag all matched transactions in Copilot with the BenefitMaxxer tag.
+ * Returns the number of transactions successfully tagged.
+ */
+async function copilotTagTransactions(proxyUrl, token, cardResults) {
+  const tagId = await copilotEnsureTag(proxyUrl, token);
+
+  // Collect all unique copilotIds from matched transactions across all benefits
+  const txnIds = new Set();
+  for (const cr of cardResults) {
+    for (const br of cr.benefitResults) {
+      if (!br.matchedTxns) continue;
+      for (const t of br.matchedTxns) {
+        if (t._copilotId) txnIds.add(t._copilotId);
+      }
+    }
+  }
+
+  let tagged = 0;
+  for (const id of txnIds) {
+    try {
+      await copilotQuery(proxyUrl, token, GQL.EDIT_TRANSACTION, {
+        id,
+        changes: { tagIds: [tagId] },
+      });
+      tagged++;
+    } catch {
+      // Best-effort — skip individual failures
+    }
+  }
+
+  return tagged;
+}

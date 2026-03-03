@@ -1,0 +1,6 @@
+name            = "benefitmaxxer-proxy"
+main            = "copilot-proxy.js"
+compatibility_date = "2025-01-01"
+
+# Free Cloudflare Workers plan is sufficient for this traffic volume.
+# Deploy with:  npx wrangler deploy

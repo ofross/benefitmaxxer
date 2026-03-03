@@ -16,7 +16,14 @@ const state = {
   manualBenefits: {},    // { "cardId::benefitName": true } — user-claimed non-trackable benefits
   benefitYear: new Date().getFullYear(),
   cardResults: null,     // output of correlateBenefits()
-  summary: null
+  summary: null,
+  // Copilot integration — token held in memory only, never persisted
+  copilot: {
+    token:    null,  // JWT from user's Copilot session
+    proxyUrl: null,  // user-deployed Cloudflare Worker URL
+    user:     null,  // { id, email, name }
+    transactions: null, // fetched transaction array, replaces parsedCSVs when set
+  },
 };
 
 /* ─── DOM refs ─── */
@@ -74,6 +81,10 @@ function initStep1() {
       goToStep(2);
     }
   });
+
+  // Copilot connect button
+  $('copilot-connect-btn').addEventListener('click', openCopilotModal);
+  $('copilot-disconnect-btn').addEventListener('click', disconnectCopilot);
 
   $('clear-selection').addEventListener('click', () => {
     state.selectedCardIds.clear();
@@ -170,10 +181,122 @@ function updateStep1Bar() {
 }
 
 /* ─────────────────────────────────────────────
+   COPILOT INTEGRATION
+───────────────────────────────────────────── */
+
+function openCopilotModal() {
+  const modal = $('copilot-modal');
+  modal.style.display = 'flex';
+
+  // Pre-fill proxy URL from sessionStorage if previously entered
+  const savedProxy = sessionStorage.getItem('copilot_proxy_url');
+  if (savedProxy) $('copilot-proxy-url').value = savedProxy;
+
+  $('copilot-modal-error').style.display = 'none';
+
+  const close = () => { modal.style.display = 'none'; };
+  $('copilot-modal-close').onclick   = close;
+  $('copilot-modal-cancel').onclick  = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+
+  $('copilot-modal-connect').onclick = async () => {
+    const proxyUrl = $('copilot-proxy-url').value.trim().replace(/\/$/, '');
+    const token    = $('copilot-token').value.trim();
+    const errEl    = $('copilot-modal-error');
+    const btnLabel = $('copilot-modal-connect-label');
+
+    errEl.style.display = 'none';
+
+    if (!proxyUrl) { showCopilotError('Please enter your proxy URL.'); return; }
+    if (!token)    { showCopilotError('Please paste your Bearer token.'); return; }
+
+    btnLabel.textContent = 'Connecting…';
+    $('copilot-modal-connect').disabled = true;
+
+    try {
+      const user = await copilotVerify(proxyUrl, token);
+
+      // Store in memory only — never localStorage
+      state.copilot.token    = token;
+      state.copilot.proxyUrl = proxyUrl;
+      state.copilot.user     = user;
+
+      // Proxy URL is not sensitive — save it for convenience
+      sessionStorage.setItem('copilot_proxy_url', proxyUrl);
+
+      close();
+      onCopilotConnected();
+    } catch (err) {
+      const msg = err.message === 'TOKEN_EXPIRED'
+        ? 'Token rejected by Copilot — it may have expired. Please copy a fresh token from DevTools.'
+        : `Connection failed: ${err.message}`;
+      showCopilotError(msg);
+    } finally {
+      btnLabel.textContent = 'Connect';
+      $('copilot-modal-connect').disabled = false;
+    }
+  };
+}
+
+function showCopilotError(msg) {
+  const el = $('copilot-modal-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function onCopilotConnected() {
+  // Update Step 1 UI
+  $('copilot-banner').style.display = 'none';
+  const bar = $('copilot-connected-bar');
+  bar.style.display = 'flex';
+  $('copilot-connected-label').textContent =
+    `Copilot connected as ${state.copilot.user.email}`;
+
+  // Auto-select matched cards
+  try {
+    const accounts = await copilotFetchAccounts(state.copilot.proxyUrl, state.copilot.token);
+    const matchedIds = copilotMatchCards(accounts);
+
+    for (const id of matchedIds) {
+      state.selectedCardIds.add(id);
+    }
+
+    // Refresh the grid to show selections
+    renderCardGrid();
+    updateStep1Bar();
+
+    if (matchedIds.length > 0) {
+      $('copilot-connected-label').textContent =
+        `Copilot connected — ${matchedIds.length} card${matchedIds.length !== 1 ? 's' : ''} auto-selected`;
+    }
+  } catch {
+    // Card matching is best-effort — don't block the flow
+  }
+
+  // Show Copilot panel in Step 2
+  $('copilot-source-panel').style.display = 'block';
+}
+
+function disconnectCopilot() {
+  state.copilot.token        = null;
+  state.copilot.proxyUrl     = null;
+  state.copilot.user         = null;
+  state.copilot.transactions = null;
+
+  $('copilot-banner').style.display = 'flex';
+  $('copilot-connected-bar').style.display = 'none';
+  $('copilot-source-panel').style.display  = 'none';
+  $('copilot-fetch-status').innerHTML      = '';
+}
+
+/* ─────────────────────────────────────────────
    STEP 2 — UPLOAD
 ───────────────────────────────────────────── */
 function initStep2() {
   populateYearSelector();
+
+  // Copilot fetch button
+  $('copilot-fetch-btn').addEventListener('click', fetchCopilotTransactions);
 
   const zone = $('upload-zone');
   const fileInput = $('file-input');
@@ -308,12 +431,56 @@ function showError(msg) {
   setTimeout(() => errDiv.remove(), 6000);
 }
 
+async function fetchCopilotTransactions() {
+  const btn    = $('copilot-fetch-btn');
+  const status = $('copilot-fetch-status');
+  btn.disabled = true;
+  btn.textContent = 'Fetching…';
+  status.innerHTML = '';
+
+  try {
+    const categoryMap = await copilotFetchCategories(
+      state.copilot.proxyUrl, state.copilot.token
+    );
+    const txns = await copilotFetchTransactions(
+      state.copilot.proxyUrl, state.copilot.token,
+      state.benefitYear, categoryMap
+    );
+
+    state.copilot.transactions = txns;
+
+    // Summarise date range
+    const dates = txns.map(t => t.date).sort((a, b) => a - b);
+    const rangeStr = dates.length
+      ? `${formatDate(dates[0])} – ${formatDate(dates[dates.length - 1])}`
+      : 'No transactions found';
+
+    status.innerHTML = `
+      <div class="copilot-fetch-result">
+        <span class="copilot-fetch-ok">&#10003;</span>
+        <span><strong>${txns.length.toLocaleString()} transactions</strong> fetched &mdash; ${rangeStr}</span>
+      </div>`;
+
+    $('step2-next').disabled = false;
+  } catch (err) {
+    const msg = err.message === 'TOKEN_EXPIRED'
+      ? 'Your Copilot token has expired. Go back and reconnect with a fresh token.'
+      : `Failed to fetch transactions: ${err.message}`;
+    status.innerHTML = `<div class="copilot-fetch-error">&#9888; ${escapeHtml(msg)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Fetch Transactions';
+  }
+}
+
 /* ─────────────────────────────────────────────
    ANALYSIS
 ───────────────────────────────────────────── */
 function runAnalysis() {
   const selectedCards = CARDS.filter(c => state.selectedCardIds.has(c.id));
-  const allTransactions = state.parsedCSVs.flatMap(p => p.transactions);
+  // Use Copilot transactions if available, otherwise merge uploaded CSVs
+  const allTransactions = state.copilot.transactions
+    ?? state.parsedCSVs.flatMap(p => p.transactions);
   state.cardResults    = correlateBenefits(selectedCards, allTransactions, state.benefitYear);
   state.summary        = calcSummary(state.cardResults);
   state.overlaps       = detectOverlaps(state.cardResults);
@@ -327,8 +494,18 @@ function runAnalysis() {
 ───────────────────────────────────────────── */
 function renderDashboard() {
   renderSummaryBar();
+  renderCopilotReminders();
   renderOverlapPanel();
   renderCardSections();
+
+  // Show "Tag in Copilot" button only when Copilot is connected
+  const tagBtn = $('copilot-tag-btn');
+  if (state.copilot.token) {
+    tagBtn.style.display = 'inline-flex';
+    tagBtn.onclick = handleTagInCopilot;
+  } else {
+    tagBtn.style.display = 'none';
+  }
 
   $('step3-back').addEventListener('click', () => goToStep(2));
   $('step3-restart').addEventListener('click', () => {
@@ -880,6 +1057,112 @@ function openRemainingModal() {
   document.addEventListener('keydown', function esc(e) {
     if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
   });
+}
+
+/* ─────────────────────────────────────────────
+   COPILOT REMINDERS + WRITE-BACK
+───────────────────────────────────────────── */
+
+function renderCopilotReminders() {
+  const el = $('copilot-reminders');
+  if (!state.copilot.token || !state.cardResults) { el.innerHTML = ''; return; }
+
+  const now          = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear  = now.getFullYear();
+  const daysInMonth  = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysLeft     = daysInMonth - now.getDate();
+
+  // Collect urgent unredeemed benefits
+  const urgent = [];  // { cardName, color, benefitName, type, remaining, urgency }
+
+  for (const cr of state.cardResults) {
+    for (const br of cr.benefitResults) {
+      if (!br.trackable || br.benefit.type === 'cashback') continue;
+      if ((br.remaining || 0) <= 0) continue;
+
+      if (br.benefit.type === 'monthly_credit' && br.monthlyBreakdown) {
+        const thisMonth = br.monthlyBreakdown[currentMonth];
+        if (thisMonth && thisMonth.used < thisMonth.cap - 0.005) {
+          urgent.push({
+            cardName:    `${cr.card.issuer} ${cr.card.name}`,
+            color:       cr.card.color,
+            benefitName: br.benefit.name,
+            type:        'monthly',
+            remaining:   thisMonth.cap - thisMonth.used,
+            daysLeft,
+          });
+        }
+      } else if (br.benefit.type === 'quarterly_credit' && br.quarterlyBreakdown) {
+        const qIdx = Math.floor(currentMonth / 3);
+        const thisQ = br.quarterlyBreakdown[qIdx];
+        if (thisQ && thisQ.used < thisQ.cap - 0.005) {
+          const qEndMonth = (qIdx + 1) * 3 - 1;
+          const qEnd = new Date(currentYear, qEndMonth + 1, 0);
+          const daysToQEnd = Math.ceil((qEnd - now) / 86400000);
+          urgent.push({
+            cardName:    `${cr.card.issuer} ${cr.card.name}`,
+            color:       cr.card.color,
+            benefitName: br.benefit.name,
+            type:        'quarterly',
+            remaining:   thisQ.cap - thisQ.used,
+            daysLeft:    daysToQEnd,
+          });
+        }
+      }
+    }
+  }
+
+  if (urgent.length === 0) { el.innerHTML = ''; return; }
+
+  // Sort by days left ascending (most urgent first)
+  urgent.sort((a, b) => a.daysLeft - b.daysLeft);
+
+  const rows = urgent.map(u => {
+    const urgencyClass = u.daysLeft <= 7 ? 'urgent-high' : u.daysLeft <= 14 ? 'urgent-med' : 'urgent-low';
+    return `
+      <div class="reminder-row ${urgencyClass}">
+        <span class="reminder-dot" style="background:${u.color}"></span>
+        <div class="reminder-body">
+          <div class="reminder-name">${escapeHtml(u.benefitName)}</div>
+          <div class="reminder-card">${escapeHtml(u.cardName)}</div>
+        </div>
+        <div class="reminder-right">
+          <div class="reminder-amount">${fmtDollar(u.remaining)} left</div>
+          <div class="reminder-deadline">${u.daysLeft}d left in ${u.type === 'monthly' ? 'month' : 'quarter'}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="copilot-reminders-panel">
+      <div class="copilot-reminders-header">
+        <span class="copilot-logo-sm">✦</span>
+        <span class="copilot-reminders-title">Copilot Reminders</span>
+        <span class="copilot-reminders-sub">Benefits expiring soon</span>
+      </div>
+      <div class="reminder-list">${rows}</div>
+    </div>`;
+}
+
+async function handleTagInCopilot() {
+  const btn = $('copilot-tag-btn');
+  btn.disabled = true;
+  btn.textContent = 'Tagging…';
+
+  try {
+    const count = await copilotTagTransactions(
+      state.copilot.proxyUrl,
+      state.copilot.token,
+      state.cardResults
+    );
+    btn.textContent = `&#10003; Tagged ${count} transaction${count !== 1 ? 's' : ''} in Copilot`;
+    btn.classList.add('btn-tag-done');
+  } catch (err) {
+    btn.textContent = '&#9888; Tag in Copilot';
+    btn.disabled = false;
+    alert(`Tagging failed: ${err.message}`);
+  }
 }
 
 /* ─────────────────────────────────────────────

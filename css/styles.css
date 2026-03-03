@@ -947,6 +947,221 @@ details[open] .bank-instructions-chevron { transform: rotate(180deg); }
   border-top: 1px solid var(--gray-200);
 }
 
+/* ── Copilot Integration ── */
+:root {
+  --copilot: #6c47ff;
+  --copilot-light: #ede9ff;
+}
+
+/* Banner on Step 1 */
+.copilot-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--copilot-light);
+  border: 1.5px solid #c4b5fd;
+  border-radius: var(--radius);
+  padding: .85rem 1.1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.copilot-banner-left { display: flex; align-items: center; gap: .75rem; }
+.copilot-logo { font-size: 1.2rem; color: var(--copilot); flex-shrink: 0; }
+.copilot-banner-title { font-size: .9rem; font-weight: 700; color: var(--gray-900); }
+.copilot-banner-sub   { font-size: .78rem; color: var(--gray-500); }
+
+.copilot-connected-bar {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: var(--radius);
+  padding: .6rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: .85rem;
+}
+.copilot-connected-icon { color: var(--green); font-weight: 700; }
+
+/* Copilot-branded button */
+.btn-copilot {
+  background: var(--copilot);
+  color: #fff;
+  border: none;
+  padding: .45rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .15s;
+}
+.btn-copilot:hover { opacity: .88; }
+.btn-copilot:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Source panel on Step 2 */
+.copilot-source-card {
+  background: #fff;
+  border: 1.5px solid #c4b5fd;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.copilot-source-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+.copilot-source-icon  { font-size: 1.2rem; color: var(--copilot); }
+.copilot-source-title { font-size: .9rem; font-weight: 700; color: var(--gray-900); }
+.copilot-source-sub   { font-size: .76rem; color: var(--gray-500); }
+.copilot-source-header > div { flex: 1; }
+
+.copilot-fetch-result {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .65rem;
+  font-size: .83rem;
+  color: var(--gray-700);
+}
+.copilot-fetch-ok { color: var(--green); font-weight: 700; }
+.copilot-fetch-error {
+  margin-top: .65rem;
+  font-size: .82rem;
+  color: #991b1b;
+  background: #fee2e2;
+  padding: .45rem .7rem;
+  border-radius: var(--radius-sm);
+}
+
+.source-divider {
+  text-align: center;
+  position: relative;
+  margin: 1rem 0;
+  color: var(--gray-400);
+  font-size: .78rem;
+}
+.source-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0; right: 0;
+  height: 1px;
+  background: var(--gray-200);
+}
+.source-divider span {
+  position: relative;
+  background: var(--gray-50);
+  padding: 0 .75rem;
+}
+
+/* Copilot Connect Modal */
+.copilot-modal-dialog { max-width: 520px; }
+.copilot-modal-section { margin-bottom: 1.1rem; }
+.copilot-field-label {
+  display: block;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: .35rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.copilot-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: .5rem .75rem;
+  font-size: .88rem;
+  color: var(--gray-900);
+  outline: none;
+  transition: border-color .15s;
+}
+.copilot-input:focus { border-color: var(--copilot); }
+.copilot-field-hint {
+  font-size: .75rem;
+  color: var(--gray-400);
+  margin-top: .35rem;
+}
+.copilot-field-hint code { background: var(--gray-100); padding: .1em .3em; border-radius: 3px; }
+.copilot-token-help {
+  margin-top: .5rem;
+  font-size: .8rem;
+  color: var(--gray-600);
+}
+.copilot-token-help summary { cursor: pointer; color: var(--indigo); font-weight: 600; }
+.copilot-token-help ol { margin: .6rem 0 .6rem 1.2rem; }
+.copilot-token-help li { margin-bottom: .3rem; }
+.copilot-token-help code { background: var(--gray-100); padding: .1em .3em; border-radius: 3px; }
+.copilot-token-help kbd {
+  background: var(--gray-200); border-radius: 3px;
+  padding: .1em .35em; font-size: .78rem; font-family: monospace;
+}
+.copilot-token-note {
+  margin-top: .5rem;
+  font-size: .75rem;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  padding: .4rem .6rem;
+  border-radius: var(--radius-sm);
+}
+.copilot-modal-error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: .55rem .75rem;
+  border-radius: var(--radius-sm);
+  font-size: .83rem;
+  margin-top: .25rem;
+}
+
+/* Reminders panel on Step 3 */
+.copilot-reminders-panel {
+  background: #fff;
+  border: 1.5px solid #c4b5fd;
+  border-radius: var(--radius);
+  padding: .9rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+.copilot-reminders-header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.copilot-logo-sm       { color: var(--copilot); font-size: 1rem; }
+.copilot-reminders-title { font-size: .9rem; font-weight: 700; color: var(--gray-900); }
+.copilot-reminders-sub   { font-size: .75rem; color: var(--gray-400); margin-left: auto; }
+
+.reminder-list { display: flex; flex-direction: column; gap: .4rem; }
+.reminder-row {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .5rem .65rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid transparent;
+}
+.reminder-row.urgent-high { background: #fef2f2; border-color: var(--red); }
+.reminder-row.urgent-med  { background: #fffbeb; border-color: var(--amber); }
+.reminder-row.urgent-low  { background: var(--gray-50); border-color: var(--gray-300); }
+
+.reminder-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.reminder-body { flex: 1; min-width: 0; }
+.reminder-name { font-size: .85rem; font-weight: 600; color: var(--gray-900); }
+.reminder-card { font-size: .74rem; color: var(--gray-500); }
+.reminder-right { text-align: right; flex-shrink: 0; }
+.reminder-amount   { font-size: .88rem; font-weight: 700; color: var(--gray-900); }
+.reminder-deadline { font-size: .72rem; color: var(--gray-400); }
+.reminder-row.urgent-high .reminder-deadline { color: var(--red); font-weight: 600; }
+.reminder-row.urgent-med  .reminder-deadline { color: var(--amber); }
+
+/* Tag done state */
+.btn-tag-done { opacity: .7; cursor: default; }
+
 /* ── Footer ── */
 .app-footer {
   background: var(--gray-900);
