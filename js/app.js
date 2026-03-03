@@ -249,8 +249,7 @@ async function onCopilotConnected() {
   $('copilot-banner').style.display = 'none';
   const bar = $('copilot-connected-bar');
   bar.style.display = 'flex';
-  $('copilot-connected-label').textContent =
-    `Copilot connected as ${state.copilot.user.email}`;
+  $('copilot-connected-label').textContent = 'Copilot connected';
 
   // Auto-select matched cards
   try {
