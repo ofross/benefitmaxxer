@@ -6,6 +6,7 @@
   <title>BenefitMaxxer — Credit Card Benefit Tracker</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 </head>
 <body>
   <header class="app-header">
@@ -47,6 +48,25 @@
         <p>Select all the cards you want to track benefits for.</p>
       </div>
 
+      <!-- Plaid connect banner -->
+      <div class="plaid-banner" id="plaid-banner">
+        <div class="plaid-banner-left">
+          <span class="plaid-logo">&#127974;</span>
+          <div>
+            <div class="plaid-banner-title">Connect your bank accounts</div>
+            <div class="plaid-banner-sub">Securely import your cards and transactions via Plaid — no CSV needed.</div>
+          </div>
+        </div>
+        <button class="btn btn-plaid" id="plaid-connect-btn">Connect with Plaid</button>
+      </div>
+
+      <!-- Shown after successful Plaid connection -->
+      <div class="plaid-connected-bar" id="plaid-connected-bar" style="display:none">
+        <span class="plaid-connected-icon">&#10003;</span>
+        <span id="plaid-connected-label">Plaid connected</span>
+        <button class="btn-link" id="plaid-disconnect-btn">Disconnect</button>
+      </div>
+
       <div class="card-filters">
         <div class="search-wrap">
           <input type="text" id="card-search" class="search-input" placeholder="Search cards..." autocomplete="off">
@@ -73,11 +93,42 @@
       </div>
     </section>
 
-    <!-- Step 2: Upload -->
+    <!-- Step 2: Upload / Plaid import -->
     <section class="wizard-panel" id="step-2">
       <div class="step-header">
-        <h2>Upload your spending reports</h2>
-        <p>Export a CSV from each bank's website and drop them here — one per bank account. All processing is local, your data never leaves your browser.</p>
+        <h2>Add your spending data</h2>
+        <p id="step2-subtitle">Upload a CSV export from your bank, or connect via Plaid to import automatically.</p>
+      </div>
+
+      <!-- Plaid import panel (shown when connected) -->
+      <div id="plaid-import-panel" style="display:none">
+        <div class="plaid-source-card">
+          <div class="plaid-source-header">
+            <span class="plaid-source-icon">&#10003;</span>
+            <div>
+              <div class="plaid-source-title">Transactions imported via Plaid</div>
+              <div class="plaid-source-sub" id="plaid-import-summary">Ready to analyze.</div>
+            </div>
+            <button class="btn-link" id="plaid-reimport-btn">Re-import</button>
+          </div>
+        </div>
+        <div class="source-divider"><span>or upload a CSV manually</span></div>
+      </div>
+
+      <!-- Plaid connect prompt (shown in step 2 when not yet connected) -->
+      <div id="plaid-step2-prompt" style="display:none">
+        <div class="plaid-source-card">
+          <div class="plaid-source-header">
+            <span class="plaid-source-icon">&#127974;</span>
+            <div>
+              <div class="plaid-source-title">Import from Plaid</div>
+              <div class="plaid-source-sub">Connect your bank to fetch transactions automatically.</div>
+            </div>
+            <button class="btn btn-plaid" id="plaid-step2-connect-btn">Connect with Plaid</button>
+          </div>
+          <div id="plaid-step2-status"></div>
+        </div>
+        <div class="source-divider"><span>or upload a CSV manually</span></div>
       </div>
 
       <!-- Bank export instructions -->
@@ -205,6 +256,7 @@
   <script src="js/data.js"></script>
   <script src="js/parser.js"></script>
   <script src="js/correlator.js"></script>
+  <script src="js/plaid.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

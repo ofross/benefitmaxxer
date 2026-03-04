@@ -957,6 +957,92 @@ details[open] .bank-instructions-chevron { transform: rotate(180deg); }
   margin-top: 2rem;
 }
 
+/* ── Plaid Integration ── */
+:root { --plaid: #00b05a; }
+
+.plaid-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+  padding: .9rem 1.2rem;
+  margin-bottom: 1.25rem;
+}
+.plaid-banner-left { display: flex; align-items: center; gap: .75rem; }
+.plaid-logo { font-size: 1.4rem; }
+.plaid-banner-title { font-weight: 700; font-size: .9rem; color: var(--gray-900); }
+.plaid-banner-sub   { font-size: .78rem; color: var(--gray-500); }
+
+.btn-plaid {
+  background: var(--plaid);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: .5rem 1rem;
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .15s;
+}
+.btn-plaid:hover { opacity: .88; }
+.btn-plaid:disabled { opacity: .5; cursor: not-allowed; }
+
+.plaid-connected-bar {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius);
+  padding: .6rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: .84rem;
+  color: var(--gray-700);
+}
+.plaid-connected-icon { color: var(--plaid); font-weight: 700; }
+
+.plaid-source-card {
+  background: #fff;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.plaid-source-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.plaid-source-header > div { flex: 1; }
+.plaid-source-icon  { font-size: 1.2rem; color: var(--plaid); }
+.plaid-source-title { font-size: .9rem; font-weight: 700; color: var(--gray-900); }
+.plaid-source-sub   { font-size: .76rem; color: var(--gray-500); }
+
+.source-divider {
+  text-align: center;
+  position: relative;
+  margin: 1.25rem 0;
+  color: var(--gray-400);
+  font-size: .78rem;
+}
+.source-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  border-top: 1px solid var(--gray-200);
+  z-index: 0;
+}
+.source-divider span {
+  position: relative;
+  z-index: 1;
+  background: var(--bg);
+  padding: 0 .75rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 960px) {
   .summary-bar { grid-template-columns: repeat(3, 1fr); }
