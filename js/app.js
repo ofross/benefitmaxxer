@@ -23,6 +23,7 @@ const state = {
     connected: false,
     transactions: null,  // normalized transactions from Plaid — held in memory only
   },
+  loungesPrevStep: 1,   // which step to return to when leaving the Lounges panel
 };
 
 /* ─── DOM refs ─── */
@@ -36,14 +37,26 @@ function goToStep(n) {
   document.querySelectorAll('.wizard-panel').forEach((el, i) => {
     el.classList.toggle('active', i + 1 === n);
   });
-  // Update nav indicators
+  // Update wizard step indicators (1–3)
   for (let i = 1; i <= 3; i++) {
     const el = $(`nav-step-${i}`);
     el.classList.remove('active', 'done');
     if (i === n) el.classList.add('active');
     else if (i < n) el.classList.add('done');
   }
+  // Lounges tab highlight
+  const loungesTab = $('nav-lounges');
+  if (loungesTab) loungesTab.classList.toggle('active', n === 4);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Step 4 = Lounges panel (accessible any time cards are selected)
+function goToLounges() {
+  state.loungesPrevStep = state.step;
+  goToStep(4);
+  renderLoungeNetworksBar();
+  $('lounge-airport-input').value = '';
+  $('lounge-results').innerHTML = '';
 }
 
 /* ─────────────────────────────────────────────
@@ -243,6 +256,10 @@ function updateStep1Bar() {
   } else {
     countEl.style.display = 'none';
   }
+
+  // Enable/disable Lounges tab based on whether any cards are selected
+  const loungesTab = $('nav-lounges');
+  if (loungesTab) loungesTab.classList.toggle('disabled', n === 0);
 }
 
 /* ─────────────────────────────────────────────
@@ -999,10 +1016,173 @@ function labelForType(type) {
 }
 
 /* ─────────────────────────────────────────────
+   LOUNGES
+───────────────────────────────────────────── */
+
+// Collect unique lounge access entries across all selected cards
+function getSelectedLoungeAccess() {
+  const seen    = new Set();
+  const entries = [];
+  for (const id of state.selectedCardIds) {
+    const accesses = CARD_LOUNGE_ACCESS[id] || [];
+    for (const a of accesses) {
+      if (!seen.has(a.network)) {
+        seen.add(a.network);
+        entries.push(a);
+      }
+    }
+  }
+  return entries;
+}
+
+function getAccessibleNetworks() {
+  return new Set(getSelectedLoungeAccess().map(a => a.network));
+}
+
+function renderLoungeNetworksBar() {
+  const bar      = $('lounge-networks-bar');
+  const accesses = getSelectedLoungeAccess();
+
+  if (accesses.length === 0) {
+    bar.innerHTML = '<p class="lounge-no-access">None of your selected cards include lounge access.</p>';
+    return;
+  }
+
+  const cards = CARDS.filter(c => state.selectedCardIds.has(c.id));
+  const byCard = cards.map(card => {
+    const cardAccess = CARD_LOUNGE_ACCESS[card.id] || [];
+    if (cardAccess.length === 0) return null;
+    return { card, accesses: cardAccess };
+  }).filter(Boolean);
+
+  bar.innerHTML = `
+    <div class="lounge-networks-title">Your lounge access from selected cards:</div>
+    <div class="lounge-card-list">
+      ${byCard.map(({ card, accesses: ca }) => `
+        <div class="lounge-card-row">
+          <span class="lounge-card-dot" style="background:${card.color}"></span>
+          <span class="lounge-card-name">${escapeHtml(card.issuer)} ${escapeHtml(card.name)}</span>
+          <div class="lounge-network-chips">
+            ${ca.map(a => {
+              const net = LOUNGE_NETWORKS[a.network];
+              return `<span class="lounge-chip" style="background:${net.color}" title="${escapeHtml(a.label)}">${net.badge}</span>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="lounge-legend">
+      ${Object.entries(LOUNGE_NETWORKS)
+          .filter(([k]) => [...getAccessibleNetworks()].includes(k))
+          .map(([k, n]) => `<span class="lounge-legend-item"><span class="lounge-chip" style="background:${n.color}">${n.badge}</span> ${escapeHtml(n.name)}</span>`)
+          .join('')}
+    </div>
+  `;
+}
+
+function searchLounges(rawCode) {
+  const code    = rawCode.trim().toUpperCase();
+  const results = $('lounge-results');
+
+  if (!code) { results.innerHTML = ''; return; }
+
+  const airport = AIRPORT_LOUNGES[code];
+  if (!airport) {
+    results.innerHTML = `
+      <div class="lounge-not-found">
+        <strong>${escapeHtml(code)}</strong> isn't in the database yet.
+        For a full live directory, check
+        <a href="https://www.prioritypass.com/en/lounges" target="_blank" rel="noopener">Priority Pass &#8599;</a>
+        or your card's travel portal.
+      </div>
+    `;
+    return;
+  }
+
+  const accessNets    = getAccessibleNetworks();
+  const accessDetails = getSelectedLoungeAccess();
+
+  // Split lounges into accessible / not accessible
+  const accessible = airport.lounges.filter(l => accessNets.has(l.network));
+  const other      = airport.lounges.filter(l => !accessNets.has(l.network));
+
+  function buildLoungeCard(lounge) {
+    const net    = LOUNGE_NETWORKS[lounge.network];
+    const detail = accessDetails.find(a => a.network === lounge.network);
+    const notesHtml = detail && (detail.notes || detail.guestPolicy) ? `
+      <div class="lounge-access-notes">
+        ${detail.notes ? `<div>&#9432; ${escapeHtml(detail.notes)}</div>` : ''}
+        ${detail.guestPolicy ? `<div>&#128101; ${escapeHtml(detail.guestPolicy)}</div>` : ''}
+      </div>
+    ` : '';
+    return `
+      <div class="lounge-item ${accessNets.has(lounge.network) ? 'lounge-item-accessible' : 'lounge-item-locked'}">
+        <span class="lounge-chip lounge-chip-lg" style="background:${net.color}">${net.badge}</span>
+        <div class="lounge-item-info">
+          <div class="lounge-item-name">${escapeHtml(lounge.name)}</div>
+          <div class="lounge-item-terminal">${escapeHtml(lounge.terminal)}</div>
+          ${notesHtml}
+        </div>
+        ${accessNets.has(lounge.network)
+          ? '<span class="lounge-access-badge">&#10003; You have access</span>'
+          : '<span class="lounge-no-badge">&#128274; No access</span>'}
+      </div>
+    `;
+  }
+
+  results.innerHTML = `
+    <div class="lounge-airport-header">
+      <div class="lounge-airport-name">${escapeHtml(airport.name)}</div>
+      <div class="lounge-airport-city">${escapeHtml(airport.city)}</div>
+    </div>
+    ${accessible.length > 0 ? `
+      <div class="lounge-section">
+        <div class="lounge-section-title lounge-section-accessible">
+          &#10003; ${accessible.length} lounge${accessible.length !== 1 ? 's' : ''} you can access
+        </div>
+        ${accessible.map(buildLoungeCard).join('')}
+      </div>
+    ` : `
+      <div class="lounge-section">
+        <div class="lounge-no-access-here">None of your cards grant access to lounges at ${escapeHtml(code)}.</div>
+      </div>
+    `}
+    ${other.length > 0 ? `
+      <div class="lounge-section">
+        <div class="lounge-section-title lounge-section-other">Other lounges at this airport</div>
+        ${other.map(buildLoungeCard).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+function initLounges() {
+  const tab   = $('nav-lounges');
+  const input = $('lounge-airport-input');
+  const btn   = $('lounge-search-btn');
+  const back  = $('lounges-back');
+
+  tab.addEventListener('click', () => {
+    if (!tab.classList.contains('disabled')) goToLounges();
+  });
+
+  btn.addEventListener('click', () => searchLounges(input.value));
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') searchLounges(input.value); });
+  input.addEventListener('input', () => {
+    if (input.value.length === 3) searchLounges(input.value);
+  });
+
+  back.addEventListener('click', () => {
+    goToStep(state.loungesPrevStep || 1);
+  });
+}
+
+/* ─────────────────────────────────────────────
    INIT
 ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   initPlaid();
   initStep1();
   initStep2();
+  initLounges();
 });

@@ -36,6 +36,11 @@
         <span class="step-num">3</span>
         <span class="step-label">Dashboard</span>
       </div>
+      <div class="wizard-connector lounge-connector"></div>
+      <div class="wizard-step lounge-tab disabled" id="nav-lounges" title="Select cards first to unlock Lounge Finder">
+        <span class="step-num lounge-icon">&#9992;</span>
+        <span class="step-label">Lounges</span>
+      </div>
     </div>
   </nav>
 
@@ -247,6 +252,43 @@
       </div>
     </section>
 
+    <!-- Lounges Panel -->
+    <section class="wizard-panel" id="step-lounges">
+      <div class="step-header">
+        <h2>&#9992; Airport Lounge Finder</h2>
+        <p>Enter an airport code to see which lounges you can access with your selected cards.</p>
+      </div>
+
+      <!-- Your lounge networks summary -->
+      <div class="lounge-networks-bar" id="lounge-networks-bar">
+        <!-- populated by JS -->
+      </div>
+
+      <!-- Airport search -->
+      <div class="lounge-search-row">
+        <div class="lounge-search-wrap">
+          <input type="text" id="lounge-airport-input"
+                 class="lounge-airport-input"
+                 placeholder="Airport code (e.g. JFK, LAX, ORD)"
+                 maxlength="4"
+                 autocomplete="off"
+                 autocapitalize="characters"
+                 spellcheck="false">
+          <button class="btn btn-primary" id="lounge-search-btn">Search</button>
+        </div>
+        <p class="lounge-search-hint">Covers 40+ major US and international airports. <a href="https://www.prioritypass.com/en/lounges" target="_blank" rel="noopener">Full Priority Pass directory &#8599;</a></p>
+      </div>
+
+      <!-- Results -->
+      <div id="lounge-results">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary" id="lounges-back">&#8592; Back</button>
+      </div>
+    </section>
+
   </main>
 
   <footer class="app-footer">
@@ -256,6 +298,7 @@
   <script src="js/data.js"></script>
   <script src="js/parser.js"></script>
   <script src="js/correlator.js"></script>
+  <script src="js/loungeData.js"></script>
   <script src="js/plaid.js"></script>
   <script src="js/app.js"></script>
 </body>

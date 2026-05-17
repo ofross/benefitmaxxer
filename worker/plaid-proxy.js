@@ -7,14 +7,22 @@
  * by the browser.
  *
  * Environment variables (set via `wrangler secret put`):
- *   PLAID_CLIENT_ID   — from dashboard.plaid.com → Team Settings → Keys
- *   PLAID_SECRET      — sandbox / development / production secret
- *   PLAID_ENV         — "sandbox", "development", or "production"
+ *   PLAID_CLIENT_ID      — from dashboard.plaid.com → Team Settings → Keys
+ *   PLAID_SECRET         — sandbox / development / production secret
+ *   PLAID_ENV            — "sandbox", "development", or "production"
+ *   MAILCHANNELS_API_KEY — from mailchannels.com dashboard (for email alerts)
+ *
+ * KV binding (set via wrangler.toml):
+ *   USAGE_KV — stores per-IP rate limit windows and daily call counts
  *
  * Endpoints:
  *   POST /link-token  — create a Plaid Link token to initialize Link UI
  *   POST /exchange    — swap public_token → access_token, fetch transactions & accounts
  *   OPTIONS *         — CORS preflight
+ *
+ * Rate limiting: max 10 Plaid API calls per client IP per 2-hour window.
+ * When exceeded, an alert email is sent to oof@oof.org.
+ * A nightly usage summary is emailed at 8 AM UTC via the scheduled cron.
  */
 
 const CORS = {
@@ -22,6 +30,10 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+const ALERT_EMAIL     = 'oof@oof.org';
+const RATE_LIMIT_MAX  = 10;
+const RATE_WINDOW_SEC = 2 * 60 * 60; // 2 hours in seconds
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -51,6 +63,117 @@ async function plaidPost(env, clientId, secret, path, body) {
   return data;
 }
 
+/* ─── Rate limiting ─────────────────────────────────────────────────────────
+   Key: rate:<ip>  →  { count: number, windowStart: unix-seconds }
+   TTL = RATE_WINDOW_SEC so KV auto-expires stale entries.
+   Returns { allowed: boolean, count: number, isNewWindow: boolean }
+─────────────────────────────────────────────────────────────────────────── */
+async function checkRateLimit(kv, ip) {
+  if (!kv) return { allowed: true, count: 1, isNewWindow: true }; // KV not configured → open
+
+  const key  = `rate:${ip}`;
+  const now  = Math.floor(Date.now() / 1000);
+  const data = await kv.get(key, 'json');
+
+  if (!data || now - data.windowStart >= RATE_WINDOW_SEC) {
+    await kv.put(key, JSON.stringify({ count: 1, windowStart: now }), { expirationTtl: RATE_WINDOW_SEC });
+    return { allowed: true, count: 1, isNewWindow: true };
+  }
+
+  if (data.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, count: data.count, isNewWindow: false };
+  }
+
+  data.count += 1;
+  await kv.put(key, JSON.stringify(data), { expirationTtl: RATE_WINDOW_SEC });
+  return { allowed: true, count: data.count, isNewWindow: false };
+}
+
+/* ─── Daily usage tracking ───────────────────────────────────────────────────
+   Key: daily:<YYYY-MM-DD>:<ip>  →  count
+   TTL = 8 days so the previous day is always available for the cron.
+─────────────────────────────────────────────────────────────────────────── */
+async function recordDailyCall(kv, ip) {
+  if (!kv) return;
+  const date = new Date().toISOString().slice(0, 10);
+  const key  = `daily:${date}:${ip}`;
+  const prev = (await kv.get(key, 'json')) || 0;
+  await kv.put(key, prev + 1, { expirationTtl: 8 * 24 * 3600 });
+}
+
+/* ─── Email via MailChannels ─────────────────────────────────────────────────
+   Requires MAILCHANNELS_API_KEY secret.
+   If not set, emails are silently skipped (rate limiting still works).
+─────────────────────────────────────────────────────────────────────────── */
+async function sendEmail(apiKey, subject, text) {
+  if (!apiKey) {
+    console.warn('MAILCHANNELS_API_KEY not configured — skipping email:', subject);
+    return;
+  }
+  try {
+    const res = await fetch('https://api.mailchannels.net/tx/v1/send', {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token':  apiKey,
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: ALERT_EMAIL }] }],
+        from:    { email: 'alerts@benefitmaxxer.workers.dev', name: 'BenefitMaxxer Alerts' },
+        subject,
+        content: [{ type: 'text/plain', value: text }],
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error('MailChannels send failed:', res.status, body);
+    }
+  } catch (err) {
+    console.error('MailChannels error:', err.message);
+  }
+}
+
+/* ─── Nightly cron handler ─────────────────────────────────────────────────── */
+async function handleNightlySummary(env) {
+  const kv     = env.USAGE_KV;
+  const apiKey = env.MAILCHANNELS_API_KEY;
+
+  if (!kv) {
+    console.warn('USAGE_KV not configured — skipping nightly summary');
+    return;
+  }
+
+  // Summarise yesterday's calls
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const { keys }  = await kv.list({ prefix: `daily:${yesterday}:` });
+
+  if (keys.length === 0) {
+    await sendEmail(apiKey,
+      `BenefitMaxxer Daily Summary: ${yesterday}`,
+      `No Plaid API calls recorded on ${yesterday}.`
+    );
+    return;
+  }
+
+  const entries = await Promise.all(
+    keys.map(async k => {
+      const count = (await kv.get(k.name, 'json')) || 0;
+      const ip    = k.name.split(':').slice(2).join(':'); // handles IPv6 colons
+      return { ip, count };
+    })
+  );
+  entries.sort((a, b) => b.count - a.count);
+
+  const total = entries.reduce((s, e) => s + e.count, 0);
+  const lines = entries.map(e => `  ${e.ip}: ${e.count} call${e.count !== 1 ? 's' : ''}`).join('\n');
+
+  await sendEmail(apiKey,
+    `BenefitMaxxer Daily Summary: ${yesterday} — ${total} Plaid calls`,
+    `BenefitMaxxer Plaid API usage for ${yesterday}\n\nTotal calls:    ${total}\nUnique clients: ${entries.length}\n\nBreakdown by client IP:\n${lines}`
+  );
+}
+
+/* ─── Main fetch handler ────────────────────────────────────────────────────── */
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -64,6 +187,23 @@ export default {
     if (!clientId || !secret) {
       return json({ error: 'Worker not configured — set PLAID_CLIENT_ID and PLAID_SECRET secrets.' }, 500);
     }
+
+    // Identify client — prefer CF-Connecting-IP, fall back to socket IP
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+
+    // Rate limit check
+    const rl = await checkRateLimit(env.USAGE_KV, ip);
+    if (!rl.allowed) {
+      // Send alert email (fire-and-forget — don't await, don't block the 429)
+      sendEmail(env.MAILCHANNELS_API_KEY,
+        `BenefitMaxxer rate limit exceeded by ${ip}`,
+        `Client IP ${ip} has exceeded the rate limit of ${RATE_LIMIT_MAX} Plaid API calls per 2-hour window.\n\nThis call was blocked. If this is unexpected activity, consider blocking the IP in your Cloudflare dashboard.`
+      );
+      return json({ error: 'Rate limit exceeded. You may make up to 10 Plaid API calls per 2-hour window.' }, 429);
+    }
+
+    // Record this call in daily stats (fire-and-forget)
+    recordDailyCall(env.USAGE_KV, ip);
 
     const url  = new URL(request.url);
     let body;
@@ -137,11 +277,11 @@ export default {
         const accounts = (acctData.accounts || [])
           .filter(a => a.type === 'credit')
           .map(a => ({
-            id:           a.account_id,
-            name:         a.official_name || a.name || '',
-            type:         a.type,
-            subtype:      a.subtype,
-            mask:         a.mask,
+            id:      a.account_id,
+            name:    a.official_name || a.name || '',
+            type:    a.type,
+            subtype: a.subtype,
+            mask:    a.mask,
           }));
 
         // access_token intentionally not included in response
@@ -153,5 +293,9 @@ export default {
     } catch (err) {
       return json({ error: err.message }, 500);
     }
+  },
+
+  async scheduled(event, env) {
+    await handleNightlySummary(env);
   },
 };
