@@ -1245,3 +1245,18 @@ details[open] .bank-instructions-chevron { transform: rotate(180deg); }
   .lounge-search-wrap { flex-direction: column; }
   .lounge-airport-input { max-width: 100%; }
 }
+
+/* Plaid error modal pre-formatted text */
+.plaid-error-pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: .85rem;
+  line-height: 1.55;
+  color: var(--gray-700);
+  margin: 0;
+  background: var(--gray-50);
+  padding: .75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+}

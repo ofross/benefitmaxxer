@@ -103,11 +103,11 @@ async function recordDailyCall(kv, ip) {
 
 /* ─── Email via MailChannels ─────────────────────────────────────────────────
    Requires MAILCHANNELS_API_KEY secret.
-   If not set, emails are silently skipped (rate limiting still works).
+   If not set, email is skipped but everything else still works.
 ─────────────────────────────────────────────────────────────────────────── */
 async function sendEmail(apiKey, subject, text) {
   if (!apiKey) {
-    console.warn('MAILCHANNELS_API_KEY not configured — skipping email:', subject);
+    console.warn('[benefitmaxxer] MAILCHANNELS_API_KEY not set — skipping:', subject);
     return;
   }
   try {
@@ -126,11 +126,33 @@ async function sendEmail(apiKey, subject, text) {
     });
     if (!res.ok) {
       const body = await res.text();
-      console.error('MailChannels send failed:', res.status, body);
+      console.error('[benefitmaxxer] MailChannels send failed:', res.status, body);
+    } else {
+      console.log('[benefitmaxxer] Email sent:', subject);
     }
   } catch (err) {
-    console.error('MailChannels error:', err.message);
+    console.error('[benefitmaxxer] MailChannels error:', err.message);
   }
+}
+
+/* ─── Error alerting ─────────────────────────────────────────────────────────
+   Call this whenever something unexpected goes wrong. Logs to Workers Logs
+   and emails oof@oof.org if MAILCHANNELS_API_KEY is set.
+─────────────────────────────────────────────────────────────────────────── */
+async function alertError(env, context, errorMsg, extraDetails = '') {
+  const ip  = context?.ip  || 'unknown';
+  const path = context?.path || 'unknown';
+  const ts  = new Date().toISOString();
+
+  const logLine = `[benefitmaxxer] ERROR ${ts} | path=${path} ip=${ip} | ${errorMsg}${extraDetails ? '\n' + extraDetails : ''}`;
+  console.error(logLine);
+
+  // Fire-and-forget email — don't let email failure mask the real error
+  sendEmail(
+    env.MAILCHANNELS_API_KEY,
+    `BenefitMaxxer worker error: ${errorMsg.slice(0, 80)}`,
+    `BenefitMaxxer Plaid Worker — Error Alert\n\nTime:    ${ts}\nPath:    ${path}\nClient:  ${ip}\nError:   ${errorMsg}${extraDetails ? '\n\nDetails:\n' + extraDetails : ''}\n\nCheck Cloudflare Workers Logs for the full trace.`
+  );
 }
 
 /* ─── Nightly cron handler ─────────────────────────────────────────────────── */
@@ -176,28 +198,47 @@ async function handleNightlySummary(env) {
 /* ─── Main fetch handler ────────────────────────────────────────────────────── */
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    const ip  = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const ctx = { ip, path: url.pathname };
+
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
+
+    // ── /health — quick liveness check (GET or POST) ─────────────────────────
+    if (url.pathname === '/health') {
+      const { PLAID_CLIENT_ID: clientId, PLAID_SECRET: secret, PLAID_ENV: plaidEnv = 'sandbox' } = env;
+      return json({
+        ok:            true,
+        plaid_env:     plaidEnv,
+        plaid_creds:   !!(clientId && secret),
+        kv_bound:      !!env.USAGE_KV,
+        email_bound:   !!env.MAILCHANNELS_API_KEY,
+        ts:            new Date().toISOString(),
+      });
+    }
+
     if (request.method !== 'POST') {
       return json({ error: 'Only POST requests are accepted.' }, 405);
     }
 
     const { PLAID_CLIENT_ID: clientId, PLAID_SECRET: secret, PLAID_ENV: plaidEnv = 'sandbox' } = env;
     if (!clientId || !secret) {
-      return json({ error: 'Worker not configured — set PLAID_CLIENT_ID and PLAID_SECRET secrets.' }, 500);
+      const msg = 'Worker not configured — PLAID_CLIENT_ID and/or PLAID_SECRET secrets are missing.';
+      console.error('[benefitmaxxer]', msg);
+      alertError(env, ctx, msg);
+      return json({ error: msg }, 500);
     }
-
-    // Identify client — prefer CF-Connecting-IP, fall back to socket IP
-    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
 
     // Rate limit check
     const rl = await checkRateLimit(env.USAGE_KV, ip);
     if (!rl.allowed) {
-      // Send alert email (fire-and-forget — don't await, don't block the 429)
+      const msg = `Rate limit exceeded (${RATE_LIMIT_MAX} calls / 2 hrs)`;
+      console.warn(`[benefitmaxxer] ${msg} — ip=${ip}`);
       sendEmail(env.MAILCHANNELS_API_KEY,
         `BenefitMaxxer rate limit exceeded by ${ip}`,
-        `Client IP ${ip} has exceeded the rate limit of ${RATE_LIMIT_MAX} Plaid API calls per 2-hour window.\n\nThis call was blocked. If this is unexpected activity, consider blocking the IP in your Cloudflare dashboard.`
+        `Client IP ${ip} exceeded the limit of ${RATE_LIMIT_MAX} Plaid API calls per 2-hour window.\n\nThe call was blocked. If this is unexpected, consider blocking the IP in your Cloudflare dashboard.`
       );
       return json({ error: 'Rate limit exceeded. You may make up to 10 Plaid API calls per 2-hour window.' }, 429);
     }
@@ -205,10 +246,11 @@ export default {
     // Record this call in daily stats (fire-and-forget)
     recordDailyCall(env.USAGE_KV, ip);
 
-    const url  = new URL(request.url);
     let body;
     try   { body = await request.json(); }
     catch { return json({ error: 'Request body must be valid JSON.' }, 400); }
+
+    console.log(`[benefitmaxxer] ${url.pathname} ip=${ip}`);
 
     try {
       // ── /link-token ──────────────────────────────────────────────────────────
@@ -221,11 +263,11 @@ export default {
           country_codes: ['US'],
           language:      'en',
         });
+        console.log(`[benefitmaxxer] /link-token OK ip=${ip}`);
         return json({ link_token: data.link_token });
       }
 
       // ── /exchange ─────────────────────────────────────────────────────────────
-      // Swap public_token → access_token, fetch accounts + transactions, discard token.
       if (url.pathname === '/exchange') {
         const { public_token, year } = body;
         if (!public_token) return json({ error: 'Missing public_token.' }, 400);
@@ -234,12 +276,10 @@ export default {
         const startDate  = `${targetYear}-01-01`;
         const endDate    = `${targetYear}-12-31`;
 
-        // Exchange public_token for access_token — never leaves this Worker
         const { access_token } = await plaidPost(
           plaidEnv, clientId, secret, '/item/public_token/exchange', { public_token }
         );
 
-        // Fetch accounts and transactions in parallel
         const [acctData, txnData] = await Promise.all([
           plaidPost(plaidEnv, clientId, secret, '/accounts/get', { access_token }),
           plaidPost(plaidEnv, clientId, secret, '/transactions/get', {
@@ -250,7 +290,6 @@ export default {
           }),
         ]);
 
-        // Paginate if there are more than 500 transactions
         let allTxns = txnData.transactions || [];
         const total = txnData.total_transactions || 0;
 
@@ -264,16 +303,14 @@ export default {
           allTxns = allTxns.concat(page.transactions || []);
         }
 
-        // Normalize to BenefitMaxxer's internal format before returning
         const transactions = allTxns.map(t => ({
           date:        t.date,
           description: t.name || t.merchant_name || '',
           category:    (t.personal_finance_category?.primary ||
                         (t.category || []).join(' > ') || ''),
-          amount:      Math.abs(t.amount), // Plaid: positive = money out for credit cards
+          amount:      Math.abs(t.amount),
         }));
 
-        // Normalize accounts for card matching
         const accounts = (acctData.accounts || [])
           .filter(a => a.type === 'credit')
           .map(a => ({
@@ -284,18 +321,21 @@ export default {
             mask:    a.mask,
           }));
 
-        // access_token intentionally not included in response
+        console.log(`[benefitmaxxer] /exchange OK ip=${ip} txns=${transactions.length} accounts=${accounts.length}`);
         return json({ accounts, transactions });
       }
 
       return json({ error: `Unknown endpoint: ${url.pathname}` }, 404);
 
     } catch (err) {
+      // Plaid API errors and unexpected exceptions both land here
+      await alertError(env, ctx, err.message);
       return json({ error: err.message }, 500);
     }
   },
 
   async scheduled(event, env) {
+    console.log('[benefitmaxxer] Running nightly summary cron');
     await handleNightlySummary(env);
   },
 };

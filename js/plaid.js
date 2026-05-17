@@ -11,6 +11,36 @@
  * On success, calls onSuccess({ accounts, transactions }).
  * On error, calls onError(errorMessage).
  */
+/**
+ * Convert a raw fetch/network error into a message a human can act on.
+ */
+function humanizeWorkerError(rawMsg, workerUrl) {
+  const isNetworkError =
+    rawMsg === 'Failed to fetch' ||
+    rawMsg.includes('NetworkError') ||
+    rawMsg.includes('network') ||
+    rawMsg.includes('ERR_NAME_NOT_RESOLVED') ||
+    rawMsg.includes('ERR_CONNECTION_REFUSED');
+
+  if (isNetworkError) {
+    return (
+      'Cannot reach the BenefitMaxxer proxy — the Cloudflare Worker is not responding.\n\n' +
+      'To fix this, deploy the worker:\n' +
+      '  cd ~/benefitmaxxer/worker\n' +
+      '  wrangler deploy\n\n' +
+      `Worker URL: ${workerUrl}\n` +
+      'After deploying, refresh this page and try again.\n\n' +
+      `(Technical detail: ${rawMsg})`
+    );
+  }
+
+  if (rawMsg.includes('not configured') || rawMsg.includes('PLAID_CLIENT_ID')) {
+    return 'The Plaid worker is running but missing credentials. Run: wrangler secret put PLAID_CLIENT_ID and wrangler secret put PLAID_SECRET';
+  }
+
+  return rawMsg;
+}
+
 async function plaidConnect(workerUrl, year, onSuccess, onError) {
   // 1. Get a link token from our Worker
   let linkToken;
@@ -20,11 +50,16 @@ async function plaidConnect(workerUrl, year, onSuccess, onError) {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ user_id: plaidAnonUserId() }),
     });
+    if (!res.ok) {
+      let errMsg;
+      try { const d = await res.json(); errMsg = d.error || `Worker error ${res.status}`; }
+      catch { errMsg = `Worker returned HTTP ${res.status}`; }
+      throw new Error(errMsg);
+    }
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `Worker error ${res.status}`);
     linkToken = data.link_token;
   } catch (err) {
-    onError(`Could not create Link session: ${err.message}`);
+    onError(humanizeWorkerError(err.message, workerUrl));
     return;
   }
 
@@ -40,11 +75,16 @@ async function plaidConnect(workerUrl, year, onSuccess, onError) {
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ public_token: publicToken, year }),
         });
+        if (!res.ok) {
+          let errMsg;
+          try { const d = await res.json(); errMsg = d.error || `Worker error ${res.status}`; }
+          catch { errMsg = `Worker returned HTTP ${res.status}`; }
+          throw new Error(errMsg);
+        }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Worker error ${res.status}`);
         onSuccess(data); // { accounts, transactions }
       } catch (err) {
-        onError(`Could not fetch transactions: ${err.message}`);
+        onError(humanizeWorkerError(err.message, workerUrl));
       }
     },
 

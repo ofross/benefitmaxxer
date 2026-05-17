@@ -90,7 +90,7 @@ function startPlaidConnect() {
       if (btn) btn.disabled = false;
     },
     (errMsg) => {
-      alert(`Plaid connection failed: ${errMsg}`);
+      showPlaidError(errMsg);
       if (btn) btn.disabled = false;
     }
   );
@@ -120,6 +120,30 @@ function onPlaidConnected(accounts) {
 
   // Plaid transactions are enough to proceed — enable Analyze
   $('step2-next').disabled = false;
+}
+
+function showPlaidError(msg) {
+  // Replace \n with line breaks for readability; use a modal-style overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-dialog" role="alertdialog" style="max-width:540px">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color:#dc2626">&#9888; Plaid Connection Error</h3>
+        <button class="btn-icon modal-close" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="plaid-error-pre">${escapeHtml(msg)}</pre>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('.modal-close').addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+  });
 }
 
 function disconnectPlaid() {

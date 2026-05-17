@@ -2,20 +2,26 @@ name            = "benefitmaxxer-plaid"
 main            = "plaid-proxy.js"
 compatibility_date = "2025-01-01"
 
-# Secrets are set via CLI — never commit them:
+# ── Required secrets (set once, never re-deploy to update) ──────────────────
 #   wrangler secret put PLAID_CLIENT_ID
 #   wrangler secret put PLAID_SECRET
 #   wrangler secret put PLAID_ENV             (sandbox | development | production)
+#
+# ── Optional: email alerts via MailChannels ──────────────────────────────────
 #   wrangler secret put MAILCHANNELS_API_KEY  (from mailchannels.com dashboard)
 #
-# KV namespace — create once, then paste the IDs here:
+# ── Optional: rate limiting + nightly summary via KV ────────────────────────
+# To enable, run:
 #   wrangler kv namespace create USAGE_KV
 #   wrangler kv namespace create USAGE_KV --preview
-[[kv_namespaces]]
-binding    = "USAGE_KV"
-id         = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_YOUR_KV_PREVIEW_ID"
-
-[triggers]
-# Nightly summary email: 8 AM UTC (midnight Pacific / 4 AM Eastern)
-crons = ["0 8 * * *"]
+# Then uncomment the block below and paste in the IDs:
+#
+# [[kv_namespaces]]
+# binding    = "USAGE_KV"
+# id         = "<paste id from: wrangler kv namespace create USAGE_KV>"
+# preview_id = "<paste id from: wrangler kv namespace create USAGE_KV --preview>"
+#
+# Also uncomment the cron block to enable nightly summary emails:
+#
+# [triggers]
+# crons = ["0 8 * * *"]
