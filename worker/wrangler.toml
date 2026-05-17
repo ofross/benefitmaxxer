@@ -1,0 +1,8 @@
+name            = "benefitmaxxer-plaid"
+main            = "plaid-proxy.js"
+compatibility_date = "2025-01-01"
+
+# Secrets are set via CLI — never commit them:
+#   wrangler secret put PLAID_CLIENT_ID
+#   wrangler secret put PLAID_SECRET
+#   wrangler secret put PLAID_ENV   (sandbox | development | production)

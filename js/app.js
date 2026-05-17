@@ -5,6 +5,8 @@
 'use strict';
 
 /* ─── App State ─── */
+const PLAID_WORKER_URL = 'https://benefitmaxxer-plaid.benefitmaxxer.workers.dev';
+
 const state = {
   step: 1,
   selectedCardIds: new Set(),
@@ -16,7 +18,11 @@ const state = {
   manualBenefits: {},    // { "cardId::benefitName": true } — user-claimed non-trackable benefits
   benefitYear: new Date().getFullYear(),
   cardResults: null,     // output of correlateBenefits()
-  summary: null
+  summary: null,
+  plaid: {
+    connected: false,
+    transactions: null,  // normalized transactions from Plaid — held in memory only
+  },
 };
 
 /* ─── DOM refs ─── */
@@ -43,6 +49,76 @@ function goToStep(n) {
 /* ─────────────────────────────────────────────
    STEP 1 — CARD SELECTION
 ───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   PLAID INTEGRATION
+───────────────────────────────────────────── */
+function initPlaid() {
+  $('plaid-connect-btn').addEventListener('click', startPlaidConnect);
+  $('plaid-step2-connect-btn').addEventListener('click', startPlaidConnect);
+  $('plaid-disconnect-btn').addEventListener('click', disconnectPlaid);
+  $('plaid-reimport-btn').addEventListener('click', startPlaidConnect);
+}
+
+function startPlaidConnect() {
+  const btn = document.activeElement;
+  if (btn) btn.disabled = true;
+
+  plaidConnect(
+    PLAID_WORKER_URL,
+    state.benefitYear,
+    ({ accounts, transactions }) => {
+      // Normalize dates (Plaid returns strings)
+      state.plaid.transactions = transactions.map(t => ({
+        ...t,
+        date: new Date(t.date + 'T00:00:00'),
+      }));
+      state.plaid.connected = true;
+      onPlaidConnected(accounts);
+      if (btn) btn.disabled = false;
+    },
+    (errMsg) => {
+      alert(`Plaid connection failed: ${errMsg}`);
+      if (btn) btn.disabled = false;
+    }
+  );
+}
+
+function onPlaidConnected(accounts) {
+  // Auto-select matched cards
+  const matchedIds = plaidMatchCards(accounts);
+  for (const id of matchedIds) state.selectedCardIds.add(id);
+  renderCardGrid();
+  updateStep1Bar();
+
+  // Update Step 1 UI
+  $('plaid-banner').style.display = 'none';
+  $('plaid-connected-bar').style.display = 'flex';
+  const label = matchedIds.length > 0
+    ? `Plaid connected — ${matchedIds.length} card${matchedIds.length !== 1 ? 's' : ''} auto-selected`
+    : `Plaid connected — ${accounts.length} account${accounts.length !== 1 ? 's' : ''} found, select cards manually`;
+  $('plaid-connected-label').textContent = label;
+
+  // Update Step 2 UI
+  $('plaid-step2-prompt').style.display = 'none';
+  $('plaid-import-panel').style.display = 'block';
+  const count = state.plaid.transactions.length;
+  $('plaid-import-summary').textContent =
+    `${count.toLocaleString()} transactions imported for ${state.benefitYear}.`;
+
+  // Plaid transactions are enough to proceed — enable Analyze
+  $('step2-next').disabled = false;
+}
+
+function disconnectPlaid() {
+  state.plaid.connected    = false;
+  state.plaid.transactions = null;
+  $('plaid-banner').style.display = 'flex';
+  $('plaid-connected-bar').style.display = 'none';
+  $('plaid-import-panel').style.display = 'none';
+  $('plaid-step2-prompt').style.display = 'none';
+  $('step2-next').disabled = state.parsedCSVs.length === 0;
+}
+
 function initStep1() {
   renderIssuerFilters();
   renderCardGrid();
@@ -204,8 +280,13 @@ function initStep2() {
   // Navigation
   $('step2-back').addEventListener('click', () => goToStep(1));
   $('step2-next').addEventListener('click', () => {
-    if (state.parsedCSVs.length > 0) runAnalysis();
+    if (state.plaid.transactions || state.parsedCSVs.length > 0) runAnalysis();
   });
+
+  // Show Plaid prompt in Step 2 if not already connected
+  if (!state.plaid.connected) {
+    $('plaid-step2-prompt').style.display = 'block';
+  }
 }
 
 function populateYearSelector() {
@@ -313,7 +394,8 @@ function showError(msg) {
 ───────────────────────────────────────────── */
 function runAnalysis() {
   const selectedCards = CARDS.filter(c => state.selectedCardIds.has(c.id));
-  const allTransactions = state.parsedCSVs.flatMap(p => p.transactions);
+  const allTransactions = state.plaid.transactions
+    ?? state.parsedCSVs.flatMap(p => p.transactions);
   state.cardResults    = correlateBenefits(selectedCards, allTransactions, state.benefitYear);
   state.summary        = calcSummary(state.cardResults);
   state.overlaps       = detectOverlaps(state.cardResults);
@@ -920,6 +1002,7 @@ function labelForType(type) {
    INIT
 ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+  initPlaid();
   initStep1();
   initStep2();
 });
