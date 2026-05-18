@@ -57,10 +57,28 @@ async function plaidPost(env, clientId, secret, path, body) {
   });
   const data = await res.json();
   if (!res.ok) {
-    const msg = data?.error_message || data?.display_message || `Plaid error ${res.status}`;
-    throw new Error(msg);
+    const err = new Error(data?.error_message || data?.display_message || `Plaid error ${res.status}`);
+    err.plaidCode = data?.error_code || '';
+    throw err;
   }
   return data;
+}
+
+// Plaid requires a short wait after token exchange before transactions are ready.
+// Retry up to maxAttempts times with a delay between each.
+async function plaidPostWithRetry(env, clientId, secret, path, body, maxAttempts = 8, delayMs = 3000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await plaidPost(env, clientId, secret, path, body);
+    } catch (err) {
+      if (err.plaidCode === 'PRODUCT_NOT_READY' && attempt < maxAttempts) {
+        console.log(`[benefitmaxxer] PRODUCT_NOT_READY on ${path}, attempt ${attempt}/${maxAttempts}, retrying in ${delayMs}ms`);
+        await new Promise(r => setTimeout(r, delayMs));
+        continue;
+      }
+      throw err;
+    }
+  }
 }
 
 /* ─── Rate limiting ─────────────────────────────────────────────────────────
@@ -280,9 +298,10 @@ export default {
           plaidEnv, clientId, secret, '/item/public_token/exchange', { public_token }
         );
 
+        // Fetch accounts immediately; transactions may need retries on first connection
         const [acctData, txnData] = await Promise.all([
           plaidPost(plaidEnv, clientId, secret, '/accounts/get', { access_token }),
-          plaidPost(plaidEnv, clientId, secret, '/transactions/get', {
+          plaidPostWithRetry(plaidEnv, clientId, secret, '/transactions/get', {
             access_token,
             start_date: startDate,
             end_date:   endDate,
