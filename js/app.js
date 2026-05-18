@@ -454,20 +454,7 @@ function renderDashboard() {
   renderCardSections();
 
   $('step3-back').addEventListener('click', () => goToStep(2));
-  $('step3-restart').addEventListener('click', () => {
-    state.selectedCardIds.clear();
-    state.parsedCSVs      = [];
-    state.cardResults     = null;
-    state.summary         = null;
-    state.overlaps        = [];
-    state.recommendations = [];
-    state.manualBenefits  = {};
-    renderUploadedFiles();
-    $('step2-next').disabled = true;
-    renderCardGrid();
-    updateStep1Bar();
-    goToStep(1);
-  });
+  $('step3-restart').addEventListener('click', restartApp);
 }
 
 /* ─────────────────────────────────────────────
@@ -1202,6 +1189,25 @@ function initLounges() {
 }
 
 /* ─────────────────────────────────────────────
+   RESTART
+───────────────────────────────────────────── */
+function restartApp() {
+  state.selectedCardIds.clear();
+  state.parsedCSVs      = [];
+  state.cardResults     = null;
+  state.summary         = null;
+  state.overlaps        = [];
+  state.recommendations = [];
+  state.manualBenefits  = {};
+  disconnectPlaid();
+  renderUploadedFiles();
+  $('step2-next').disabled = true;
+  renderCardGrid();
+  updateStep1Bar();
+  goToStep(1);
+}
+
+/* ─────────────────────────────────────────────
    INIT
 ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1209,4 +1215,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initStep1();
   initStep2();
   initLounges();
+
+  // Logo and step-1 nav both restart the flow
+  function handleRestart() { restartApp(); }
+  $('app-logo').addEventListener('click', handleRestart);
+  $('app-logo').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') handleRestart(); });
+  $('nav-step-1').addEventListener('click', handleRestart);
 });
