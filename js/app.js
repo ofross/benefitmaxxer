@@ -5,7 +5,7 @@
 'use strict';
 
 /* ─── App State ─── */
-const PLAID_WORKER_URL = 'https://benefitmaxxer-plaid.benefitmaxxer.workers.dev';
+const PLAID_WORKER_URL = 'https://benefitmaxxer.benefitmaxxer.workers.dev';
 
 const state = {
   step: 1,

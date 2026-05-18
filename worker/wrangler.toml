@@ -1,4 +1,4 @@
-name            = "benefitmaxxer-plaid"
+name            = "benefitmaxxer"
 main            = "plaid-proxy.js"
 compatibility_date = "2025-01-01"
 
